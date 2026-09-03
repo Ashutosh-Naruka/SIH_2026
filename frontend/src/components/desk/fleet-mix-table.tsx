@@ -1,0 +1,141 @@
+import { Tooltip } from '@/components/ui/tooltip'
+import { Panel } from '@/components/desk/panel'
+import { ExplanationBlock } from '@/components/desk/explanation'
+import { Grade, scoreToGrade } from '@/components/desk/grade'
+import type { Explanation, FleetConfiguration, FleetMixFrontier } from '@/lib/types'
+import { formatNumber } from '@/lib/format'
+import { useMoney } from '@/lib/money-context'
+
+function Row({
+  c,
+  requirementDwt,
+  rejected,
+}: {
+  c: FleetConfiguration
+  requirementDwt: number
+  rejected?: boolean
+}) {
+  const usdPerMt = requirementDwt > 0 ? c.cost_p50_usd / requirementDwt : null
+  const { moneyCompact } = useMoney()
+  return (
+    <tr className={rejected ? 'opacity-55' : undefined}>
+      <td className="font-semibold">{c.vessel_class}</td>
+      <td className="desk-num text-right">{c.n_vessels}</td>
+      <td className="desk-num text-right text-muted-foreground">{formatNumber(c.dwt_per_vessel)}</td>
+      <td className="desk-num text-right text-muted-foreground">
+        {formatNumber(c.total_capacity_dwt)}
+      </td>
+      <td className="desk-num text-right">
+        {rejected ? '—' : c.voyage_days_per_vessel.toFixed(1)}
+      </td>
+      <td className="desk-num text-right font-semibold">
+        {rejected ? '—' : moneyCompact(c.cost_p50_usd)}
+      </td>
+      <td className="desk-num text-right">
+        {rejected || usdPerMt == null ? '—' : `$${usdPerMt.toFixed(2)}`}
+      </td>
+      <td className="desk-num text-right text-caption text-muted-foreground">
+        {rejected ? '—' : `${moneyCompact(c.cost_p10_usd)}–${moneyCompact(c.cost_p90_usd)}`}
+      </td>
+      <td className="text-center">
+        {rejected ? (
+          <span className="text-muted-foreground">—</span>
+        ) : (
+          <Grade letter={scoreToGrade(c.reliability_score)} />
+        )}
+      </td>
+      <td className="text-center">
+        {c.requires_transshipment ? (
+          <span
+            className="rounded-sm bg-wait/15 px-1 text-caption font-semibold text-wait"
+            title={c.transshipment_hub ?? undefined}
+          >
+            T/S
+          </span>
+        ) : (
+          <span className="text-muted-foreground">·</span>
+        )}
+      </td>
+    </tr>
+  )
+}
+
+export function FleetMixTable({
+  frontier,
+  explanation,
+}: {
+  frontier: FleetMixFrontier
+  /** `quote.explanations.fleet_mix` -- the solver's own plain-English account
+   *  of why this configuration won and what each rival cost. Computed on every
+   *  quote and previously discarded. */
+  explanation?: Explanation | null
+}) {
+  return (
+    <Panel
+      className="h-full"
+      id="fleet"
+      title="Fleet Mix Frontier"
+      soWhat={'Whether it is cheaper to move this cargo in one big ship or several smaller ones, once port limits are taken into account. If the recommended mix needs a ship size your usual owners do not offer, price the next option down before committing.'}
+      hint="Cheapest feasible vessel-class configurations for this cargo and route, priced under the real forecast. Rel. is a reliability grade (fewer ships, no transshipment = higher). T/S marks a transshipment leg. Greyed rows were ruled out; reasons below."
+      meta={`${formatNumber(frontier.requirement_dwt)} dwt required`}
+      flush
+    >
+      <table className="desk-table">
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th className="text-right">Ves.</th>
+            <th className="text-right">DWT/ea</th>
+            <th className="text-right">Total cap</th>
+            <th className="text-right">Voy d</th>
+            <th className="text-right">Cost p50</th>
+            <th className="text-right">
+              <Tooltip content="This configuration's own cost p50 ÷ cargo tonnes — the chosen fleet mix, not Rate Forecast's open-market quote or Landed Cost's freight component." className="cursor-help">
+                <span className="border-b border-dotted border-muted-foreground/50">
+                  $/mt
+                </span>
+              </Tooltip>
+            </th>
+            <th className="text-right">p10–p90</th>
+            <th className="text-center">Rel.</th>
+            <th className="text-center">T/S</th>
+          </tr>
+        </thead>
+        <tbody>
+          {frontier.configurations.map((c) => (
+            <Row
+              key={`ok-${c.vessel_class}-${c.n_vessels}`}
+              c={c}
+              requirementDwt={frontier.requirement_dwt}
+            />
+          ))}
+          {frontier.rejected_configurations.map((c) => (
+            <Row
+              key={`rej-${c.vessel_class}-${c.n_vessels}`}
+              c={c}
+              requirementDwt={frontier.requirement_dwt}
+              rejected
+            />
+          ))}
+        </tbody>
+      </table>
+      {frontier.rejected_configurations.length > 0 && (
+        <ul className="space-y-0.5 border-t border-border bg-surface-2 px-2 py-2 text-caption text-muted-foreground">
+          {frontier.rejected_configurations
+            .filter((c) => c.infeasible_reason)
+            .map((c) => (
+              <li key={`why-${c.vessel_class}-${c.n_vessels}`}>
+                <span className="font-semibold">{c.vessel_class} ×{c.n_vessels}:</span>{' '}
+                {c.infeasible_reason}
+              </li>
+            ))}
+        </ul>
+      )}
+      {explanation && (
+        <div className="border-t border-border px-2 pb-2">
+          <ExplanationBlock explanation={explanation} label="Why this configuration" />
+        </div>
+      )}
+    </Panel>
+  )
+}

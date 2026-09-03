@@ -1,0 +1,115 @@
+import { Panel } from '@/components/desk/panel'
+import { formatNumber } from '@/lib/format'
+import type { CIIRating, VesselCIIProjection, VoyageEmissions } from '@/lib/types'
+import { cn } from '@/lib/utils'
+
+/** The panel's plain-English Layer 2 (see Panel's `soWhat` prop). Declared
+ *  once here because this component renders the same panel in several states
+ *  -- loading, error, empty, populated -- and the explanation is the same in
+ *  all of them. */
+const SO_WHAT =
+  'The IMO fuel-efficiency grade this ship earns on this voyage, A to E. A ' +
+  'D or E rating is a commercial problem, not just a green one: it ' +
+  'restricts where the ship can trade next year, and owners price that into ' +
+  'the rate.'
+
+// A/B use the go tokens (better than or in line with required), C uses wait
+// (moderate), D/E use risk (worse than required) -- the same three-tone
+// convention CONGESTION_CLASS (port-checks-table.tsx) already uses, reused
+// rather than adding a new color scale.
+const RATING_CLASS: Record<CIIRating, string> = {
+  A: 'bg-go/15 text-go-on-soft',
+  B: 'bg-go/15 text-go-on-soft',
+  C: 'bg-wait/15 text-wait-on-soft',
+  D: 'bg-risk/15 text-risk-on-soft',
+  E: 'bg-risk/15 text-risk-on-soft',
+}
+
+function RatingChip({ rating }: { rating: CIIRating }) {
+  return (
+    <span className={cn('rounded-sm px-2 py-px text-body font-bold', RATING_CLASS[rating])}>
+      {rating}
+    </span>
+  )
+}
+
+function formatSignedPct(value: number): string {
+  const sign = value > 0 ? '+' : ''
+  return `${sign}${formatNumber(value, 1)}%`
+}
+
+function VesselRow({ p }: { p: VesselCIIProjection }) {
+  return (
+    <tr>
+      <td>
+        <span className="text-body font-medium text-foreground">{p.vessel_id}</span>
+        <span className="ml-1 text-caption uppercase tracking-wide text-muted-foreground">
+          {p.vessel_class}
+        </span>
+      </td>
+      <td>
+        <RatingChip rating={p.rating} />
+      </td>
+      <td className="desk-num text-right">{formatNumber(p.attained_cii, 2)}</td>
+      <td className="desk-num text-right">{formatNumber(p.required_cii, 2)}</td>
+      <td
+        className={cn(
+          'desk-num text-right font-semibold',
+          p.margin_pct >= 0 ? 'text-go' : 'text-risk',
+        )}
+      >
+        {formatSignedPct(p.margin_pct)}
+      </td>
+    </tr>
+  )
+}
+
+export function CIIPanel({ emissions }: { emissions: VoyageEmissions | null }) {
+  if (!emissions) {
+    return (
+      <Panel
+        className="h-full"
+        id="cii"
+        title="Carbon Intensity (CII)"
+      soWhat={SO_WHAT}
+        hint="IMO Carbon Intensity Indicator projection for each real vessel on this quote's route: attained vs required CII (gCO2/dwt·nm) and the A-E rating those two numbers imply."
+      >
+        <div className="flex h-full items-center justify-center text-center text-lead text-muted-foreground">
+          Add a vessel to the quote to project its IMO carbon rating.
+        </div>
+      </Panel>
+    )
+  }
+
+  return (
+    <Panel
+      className="h-full"
+      id="cii"
+      title="Carbon Intensity (CII)"
+      soWhat={SO_WHAT}
+      hint="IMO Carbon Intensity Indicator projection for each real vessel: attained vs required CII (gCO2/dwt·nm) and the A–E rating they imply. Ballast fuel to reach the load port is charged against the laden leg — the conservative reading."
+      meta={`${emissions.projections.length} vessel${emissions.projections.length === 1 ? '' : 's'} · ${emissions.rating_year} rating`}
+      flush
+    >
+      <table className="desk-table">
+        <thead>
+          <tr>
+            <th>Vessel</th>
+            <th>Rating</th>
+            <th className="text-right">Attained</th>
+            <th className="text-right">Required</th>
+            <th className="text-right">Margin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {emissions.projections.map((p) => (
+            <VesselRow key={p.vessel_id} p={p} />
+          ))}
+        </tbody>
+      </table>
+      <div className="border-t border-border px-2 py-1 text-micro text-muted-foreground">
+        gCO2/dwt·nm, both columns · positive margin = better than required
+      </div>
+    </Panel>
+  )
+}

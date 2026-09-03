@@ -1,0 +1,687 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/ibm-plex-sans';
+@import '@fontsource-variable/jetbrains-mono';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Voyage Decision Desk. Function before finish: the LOCK / WAIT verdict is the
+ * loudest thing on screen, every number carries a visible label and unit, and
+ * colour is semantic (go / caution / risk / market / structure), never
+ * decoration. IBM Plex Sans for everything read as words; JetBrains Mono for
+ * numerics only.
+ *
+ * Dark is the primary theme; light is a full, first-class alternate. Both are
+ * defined as complete parallel sets of the SAME raw custom properties below --
+ * `:root` carries dark, `.light` overrides every one of them. No component
+ * anywhere carries a `dark:` variant or a literal colour, so a component
+ * cannot be correct in one theme and wrong in the other.
+ *
+ * The semantic scale is re-tuned per theme rather than shared. --go/--wait/
+ * --risk on light are chosen to be read as dark ink on white; the same values
+ * on a #0d1117 surface read as mud, so dark gets lighter, less saturated
+ * siblings at the same semantic meaning.
+ */
+@theme inline {
+    --font-heading: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, sans-serif;
+    --font-sans: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-surface: var(--surface);
+    --color-surface-2: var(--surface-2);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-navbar: var(--navbar);
+    --color-navbar-foreground: var(--navbar-foreground);
+    --color-navbar-muted: var(--navbar-muted);
+
+    /* Semantic scale -- the only colours the desk uses. */
+    --color-go: var(--go);
+    --color-go-soft: var(--go-soft);
+    --color-wait: var(--wait);
+    --color-wait-soft: var(--wait-soft);
+    --color-risk: var(--risk);
+    --color-risk-soft: var(--risk-soft);
+    --color-market: var(--market);
+    --color-market-soft: var(--market-soft);
+    --color-structure: var(--structure);
+    --color-go-fg: var(--go-fg);
+    --color-wait-fg: var(--wait-fg);
+    --color-risk-fg: var(--risk-fg);
+    --color-market-fg: var(--market-fg);
+    --color-go-on-soft: var(--go-on-soft);
+    --color-wait-on-soft: var(--wait-on-soft);
+    --color-risk-on-soft: var(--risk-on-soft);
+    --color-market-on-soft: var(--market-on-soft);
+
+    --color-grade-a: var(--grade-a);
+    --color-grade-b: var(--grade-b);
+    --color-grade-c: var(--grade-c);
+    --color-grade-d: var(--grade-d);
+    --color-grade-e: var(--grade-e);
+    --color-grade-a-fg: var(--grade-a-fg);
+    --color-grade-b-fg: var(--grade-b-fg);
+    --color-grade-c-fg: var(--grade-c-fg);
+    --color-grade-d-fg: var(--grade-d-fg);
+    --color-grade-e-fg: var(--grade-e-fg);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    --radius-sm: calc(var(--radius) * 0.5);
+    --radius-md: var(--radius);
+    --radius-lg: calc(var(--radius) * 1.5);
+
+    /*
+     * Type scale. Before this existed the desk used twelve ad-hoc sizes
+     * (8, 8.5, 9, 9.5, 10, 11, 12, 13, 14, 15, 26, 34px) picked per component,
+     * so two panels side by side disagreed about what "a label" or "a footnote"
+     * looked like. Seven steps now, each with one job:
+     *
+     *   micro      chart axis ticks, rail labels -- text that must not
+     *              compete with the data it annotates
+     *   caption    uppercase field labels, provenance notes, footnotes
+     *   body       table cells and the default reading size for data
+     *   lead       prose, empty states, top-bar nav
+     *   figure     a panel's own headline number
+     *   figure-lg  a page's headline number
+     *   display    the LOCK / WAIT verdict, one per screen
+     *
+     * Line heights are baked in: tight for numerals (which never wrap), >=1.4
+     * for anything read as a sentence.
+     */
+    --text-micro: 9px;
+    --text-micro--line-height: 1.35;
+    --text-caption: 10px;
+    --text-caption--line-height: 1.4;
+    --text-body: 11px;
+    --text-body--line-height: 1.45;
+    --text-lead: 12px;
+    --text-lead--line-height: 1.5;
+    --text-figure: 14px;
+    --text-figure--line-height: 1.2;
+    --text-figure-lg: 22px;
+    --text-figure-lg--line-height: 1.1;
+    --text-display: 34px;
+    --text-display--line-height: 1;
+
+    /*
+     * Elevation, indirected through --elev-* so each theme defines its own.
+     * The rule stays "hierarchy comes from borders and tone, not from lift" --
+     * on light that means one hairline shade separating a white panel from the
+     * grey ground; on dark a cast shadow is invisible, so `panel` becomes a 1px
+     * top-edge highlight instead and the tonal ladder does the work. `raised`
+     * is reserved for genuinely floating surfaces (the quote drawer, popovers)
+     * where a user must see that something is over the page rather than in it.
+     */
+    --shadow-panel: var(--elev-1);
+    --shadow-raised: var(--elev-2);
+}
+
+/*
+ * DARK -- the primary theme.
+ *
+ * Not black: a cool near-neutral ground (#0b0f14) with panels one step up
+ * (#121820) and headers one step above that. Depth comes from that tonal
+ * ladder, not from drop shadows, which do not read on a dark ground -- so
+ * --elev-1 is a hairline top-edge highlight here rather than a cast shadow.
+ * Borders are LIGHTER than the surface they bound, the inverse of the light
+ * theme, because on dark a darker line reads as a gap rather than an edge.
+ */
+:root {
+    color-scheme: dark;
+
+    --navbar: #080c11;
+    --navbar-foreground: #e6ecf3;
+    --navbar-muted: #8494a6;
+
+    --background: #0b0f14;
+    --foreground: #e6ecf3;
+    --surface: #121820;
+    --surface-2: #19212b;
+    --card: #121820;
+    --card-foreground: #e6ecf3;
+    --popover: #161d26;
+    --popover-foreground: #e6ecf3;
+    --primary: #4d9fff;
+    --primary-foreground: #04121f;
+    --secondary: #1c2734;
+    --secondary-foreground: #d7e0ea;
+    --muted: #19212b;
+    --muted-foreground: #93a1b3;
+    --accent: #1b2735;
+    --accent-foreground: #7ab8ff;
+    --destructive: #ff7a70;
+    --destructive-foreground: #1a0d0c;
+    --border: #26313d;
+    --input: #303c4a;
+    --ring: #4d9fff;
+    --radius: 0.25rem;
+
+    /* Semantic scale, re-tuned for a dark ground. Same meanings, lighter and
+       less saturated so they clear AA as text on #121820 rather than sinking
+       into it the way the light theme's inks do. */
+    --structure: #4d9fff;
+    --go: #3fd07f;
+    --go-soft: #0e2419;
+    --wait: #f0ad4f;
+    --wait-soft: #2a1e0d;
+    --risk: #ff7a70;
+    --risk-soft: #2c1614;
+    --market: #a78bfa;
+    --market-soft: #1d1830;
+
+    /* Foreground for text sitting ON a solid fill of each semantic colour.
+       This has to be a token, not `text-white` in the component: the dark
+       theme's semantics are LIGHT inks, so white on them is unreadable --
+       the LOCK/WAIT verdict, the single loudest thing on the desk, rendered
+       white-on-#f0ad4f at roughly 2:1 before these existed. */
+    --go-fg: #04180d;
+    --wait-fg: #1e1204;
+    --risk-fg: #240705;
+    --market-fg: #12082b;
+
+    /* Text on a SOFT (15%-tint) background of the same semantic -- the band,
+       rating and congestion chips. On dark the tint is dark and the ink is
+       light, so the ink itself already clears AA and these are just aliases;
+       they exist so the chip classes can be written once for both themes. */
+    --go-on-soft: var(--go);
+    --wait-on-soft: var(--wait);
+    --risk-on-soft: var(--risk);
+    --market-on-soft: var(--market);
+
+    /* Grade chips are filled, so each needs a foreground that clears AA on its
+       own fill -- carried as a token per grade instead of hardcoded in
+       grade.tsx, which is what let the light theme ship a 3.25:1 "D". */
+    --grade-a: #1f7a4d;
+    --grade-a-fg: #ffffff;
+    --grade-b: #4d7a24;
+    --grade-b-fg: #ffffff;
+    --grade-c: #8a6410;
+    --grade-c-fg: #ffffff;
+    --grade-d: #9c4d14;
+    --grade-d-fg: #ffffff;
+    --grade-e: #a8322d;
+    --grade-e-fg: #ffffff;
+
+    --sidebar: #0e141b;
+    --sidebar-foreground: #e6ecf3;
+    --sidebar-primary: #4d9fff;
+    --sidebar-primary-foreground: #04121f;
+    --sidebar-accent: #1b2735;
+    --sidebar-accent-foreground: #7ab8ff;
+    --sidebar-border: #202a35;
+    --sidebar-ring: #4d9fff;
+
+    --elev-1: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+    --elev-2: 0 16px 40px -12px rgb(0 0 0 / 0.7), 0 4px 12px -4px rgb(0 0 0 / 0.5);
+
+    /* Route map. These were literals in route-map.tsx, which is why the map
+       stayed a cream-and-pale-blue world sitting in the middle of an
+       otherwise dark page -- the single most jarring thing about the first
+       dark build. Sea sits just above the panel it lives in so the map reads
+       as a distinct surface; land is a desaturated slate that lets the route
+       colours stay the brightest thing on it. */
+    /* The globe reads as an actual planet rather than a flat disc:
+       `--map-ocean-lit` is the sunlit near side, fading through `--map-sea`
+       to `--map-ocean-deep` at the limb, with `--map-atmosphere` as the thin
+       horizon glow. Land is a desaturated sea-green so coastlines separate
+       from ocean without the whole sphere reading as one blue mass. All of it
+       lives here rather than as literals in route-map.tsx, so the light theme
+       can restate the same relationships with its own inks. */
+    --map-sea: #123047;
+    --map-ocean-lit: #1c4e70;
+    --map-ocean-deep: #081826;
+    --map-land: #2b4a3e;
+    --map-coast: #6fa3b8;
+    --map-graticule: #24455b;
+    --map-atmosphere: #48a3d6;
+    --map-port: #e6ecf3;
+    --map-port-halo: #06121c;
+
+    /*
+     * Ambient depth.
+     *
+     * A flat #0b0f14 field behind flat #121820 boxes is *correct* and reads as
+     * cheap -- there is no light in the room, so every surface looks like the
+     * same piece of paper. These give the page a light source: a cool wash
+     * from the top-left where the verdict lives, a fainter one from the right,
+     * both far too weak to compete with any data. `--panel-edge` is the
+     * top-edge highlight that makes a panel read as a raised surface rather
+     * than a hole cut in the background.
+     */
+    --ambient:
+        radial-gradient(ellipse 80% 55% at 12% -10%, rgb(77 159 255 / 0.10), transparent 60%),
+        radial-gradient(ellipse 60% 50% at 100% 0%, rgb(167 139 250 / 0.06), transparent 55%);
+    --panel-edge: rgb(255 255 255 / 0.06);
+    --hairline: rgb(255 255 255 / 0.07);
+}
+
+/* LIGHT -- the full alternate. Every property above is redefined here; none is
+   inherited from the dark block, so neither theme can be half-defined. */
+.light {
+    color-scheme: light;
+
+    --navbar: #00294d;
+    --navbar-foreground: #eef4fc;
+    --navbar-muted: #93b4d6;
+
+    --background: #e9edf2;
+    --foreground: #12202e;
+    --surface: #ffffff;
+    --surface-2: #eef2f7;
+    --card: #ffffff;
+    --card-foreground: #12202e;
+    --popover: #ffffff;
+    --popover-foreground: #12202e;
+    --primary: #0b5cad;
+    --primary-foreground: #ffffff;
+    --secondary: #e2eaf4;
+    --secondary-foreground: #1c2b3a;
+    --muted: #eef2f7;
+    --muted-foreground: #566575;
+    --accent: #e2eaf4;
+    --accent-foreground: #0b5cad;
+    --destructive: #c02826;
+    --destructive-foreground: #ffffff;
+    --border: #ccd5df;
+    --input: #b9c4d0;
+    --ring: #0b5cad;
+    --radius: 0.25rem;
+
+    --structure: #0b5cad;
+    --go: #1c7c3c;
+    --go-soft: #e3f2e6;
+    --wait: #a85a00;
+    --wait-soft: #fbecd9;
+    --risk: #c02826;
+    --risk-soft: #fbe4e2;
+    --market: #6a3fa0;
+    --market-soft: #efe7f8;
+
+    /* Light's semantics are dark inks, so white sits on all four. */
+    --go-fg: #ffffff;
+    --wait-fg: #ffffff;
+    --risk-fg: #ffffff;
+    --market-fg: #ffffff;
+
+    /* On light, a 15% tint lifts the chip's ground to roughly #f2e6d9, and the
+       base inks land at 4.14:1 (wait) and 4.27:1 (go) against it -- just under
+       AA, on the band and congestion chips that exist precisely to be read at
+       a glance. These are one step darker so the same chips clear the floor
+       without changing the tint or the meaning. */
+    --go-on-soft: #166634;
+    --wait-on-soft: #8a4a00;
+    --risk-on-soft: #a81f1d;
+    --market-on-soft: #5c3590;
+
+    /* Foregrounds carried as tokens for the same reason as dark: each fill
+       needs a letter colour that clears AA on it, and B/C/D genuinely differ
+       from A/E here. White on --grade-d measured 3.25:1 when this was
+       hardcoded in the component. */
+    --grade-a: #1c7c3c;
+    --grade-a-fg: #ffffff;
+    --grade-b: #6faa3f;
+    --grade-b-fg: #12250c;
+    --grade-c: #d9a218;
+    --grade-c-fg: #3a2c02;
+    --grade-d: #d9741f;
+    --grade-d-fg: #3a1c02;
+    --grade-e: #c02826;
+    --grade-e-fg: #ffffff;
+
+    --sidebar: #eef2f7;
+    --sidebar-foreground: #12202e;
+    --sidebar-primary: #0b5cad;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e2eaf4;
+    --sidebar-accent-foreground: #0b5cad;
+    --sidebar-border: #ccd5df;
+    --sidebar-ring: #0b5cad;
+
+    --elev-1: 0 1px 2px 0 rgb(18 32 46 / 0.05);
+    --elev-2:
+        0 8px 24px -6px rgb(18 32 46 / 0.16), 0 2px 6px -2px rgb(18 32 46 / 0.08);
+
+    /* Same relationships, restated in light inks: the lit face is the palest
+       value and the limb the deepest, so the sphere still reads as a sphere
+       rather than inverting into a hole. */
+    --map-sea: #cfe3f2;
+    --map-ocean-lit: #e6f2fb;
+    --map-ocean-deep: #a6cae4;
+    --map-land: #ece6d4;
+    --map-coast: #9fb4c2;
+    --map-graticule: #bcd0dc;
+    --map-atmosphere: #8fc2e6;
+    --map-port: #1c2b3a;
+    --map-port-halo: #ffffff;
+
+    /* The light theme's ground is already bright; a wash on top of it muddies
+       rather than lifts, so it gets the faintest possible tint and no edge
+       highlight (a white top-edge on a white panel is invisible anyway). */
+    --ambient:
+        radial-gradient(ellipse 80% 55% at 12% -10%, rgb(11 92 173 / 0.05), transparent 60%);
+    --panel-edge: transparent;
+    --hairline: rgb(18 32 46 / 0.06);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 12px;
+    line-height: 1.45;
+    /* The light source. Fixed so it stays put while panels scroll past it --
+       a wash that scrolls with the content reads as a gradient painted on the
+       page; one that stays put reads as the room the page is sitting in. */
+    background-image: var(--ambient);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  /*
+   * Every numeral on the desk is tabular. Columns of money only line up if the
+   * glyphs are the same width, and a figure that updates in place (the rate,
+   * the countdown) must not jiggle as digits change. Applied at the element
+   * level so no component can forget it.
+   */
+  code,
+  kbd,
+  samp,
+  pre,
+  .font-mono,
+  [class*='font-mono'] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * One visible focus ring, everywhere, for keyboard users only. Before this
+   * the desk inherited whatever each control happened to have -- several had
+   * `focus:outline-none` with no replacement, so tabbing through the quote
+   * form left no indication of where you were.
+   */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    @apply outline-2 outline-offset-1 outline-ring;
+  }
+
+  /*
+   * Motion is an enhancement here, never information: nothing on the desk is
+   * only conveyable by animating. So under `prefers-reduced-motion` we can cut
+   * all of it -- panel expands, chart tweens, number rolls, map easing -- and
+   * lose nothing but the easing.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * The one value-presentation pattern on the desk: a label on the left, its
+   * value (mono, tabular) hard right on the same baseline. Used everywhere a
+   * single figure is shown, so nothing gets the "big number floating in space"
+   * treatment except the verdict and its cost comparison.
+   */
+  .stat-row {
+    @apply flex items-baseline justify-between gap-3 py-0.5;
+  }
+  .stat-label {
+    @apply text-caption font-semibold uppercase tracking-wide text-muted-foreground;
+  }
+  .stat-value {
+    @apply font-mono text-body tabular-nums text-foreground;
+  }
+
+  .desk-table {
+    @apply w-full border-collapse text-left;
+  }
+  /* Header cells sit on the 4px grid (8px inline / 4px block) like every other
+     surface on the desk; they used to be 6px/3px, which put every table half a
+     step out of rhythm with the panel padding around it. */
+  .desk-table thead th {
+    @apply bg-surface-2 px-2 py-1 text-caption font-semibold uppercase tracking-wide
+           text-muted-foreground border-b border-border whitespace-nowrap;
+  }
+  .desk-table tbody td {
+    @apply px-2 py-1 text-body border-b border-border/50 align-middle;
+  }
+  .desk-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  /* Row hover is a flat tint for tracking the eye across a wide row -- not a
+     lift, not a shadow. */
+  .desk-table tbody tr:hover td {
+    @apply bg-surface-2;
+  }
+  .desk-num {
+    @apply font-mono text-body tabular-nums;
+  }
+
+  /*
+   * One chip, everywhere. Status bands, CII ratings, confidence levels,
+   * provenance tags and "n=4, thin" notes were each rolling their own padding
+   * (px-1/px-1.5/px-2 x py-px/py-0.5) and their own font size, so a row of
+   * three chips from three different panels never lined up. The colour is
+   * still the caller's -- only the geometry is shared.
+   */
+  .desk-chip {
+    @apply inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-sm px-2 py-0.5
+           text-micro font-bold uppercase tracking-wide;
+  }
+  /* The neutral variant, for a chip that carries a fact rather than a status
+     (scene id, sample size, "prior") -- outlined instead of filled so it never
+     competes with a semantic chip beside it. */
+  .desk-chip-neutral {
+    @apply border border-border bg-surface font-mono font-semibold normal-case tracking-normal
+           text-muted-foreground;
+  }
+
+  /*
+   * The four panel states. Every data panel needs all of them and they were
+   * previously hand-written per component, so "no data" looked like six
+   * different things across the desk. Centred, quiet, and always sized to the
+   * panel rather than to the sentence.
+   */
+  .panel-state {
+    @apply flex h-full min-h-16 flex-col items-center justify-center gap-2 p-4 text-center;
+  }
+  .panel-state-title {
+    @apply text-lead text-muted-foreground;
+  }
+  /* Full --muted-foreground, not an /80 tint of it: the tint measured 2.95:1
+     on white, and this is the line that tells a user how to fix the empty
+     state -- the last text on the desk that should be hard to read. */
+  .panel-state-hint {
+    @apply max-w-[46ch] text-caption leading-relaxed text-muted-foreground;
+  }
+
+  /*
+   * Skeletons take the geometry of the content they stand in for, so a panel
+   * does not resize when real data lands. Pulse only -- no shimmer sweep.
+   */
+  .skeleton {
+    @apply animate-pulse rounded-sm bg-surface-2;
+  }
+
+  /*
+   * A footnote strip pinned under a table: units, caveats, provenance. Same
+   * treatment in every panel that has one.
+   */
+  .panel-note {
+    @apply border-t border-border px-2 py-1 text-micro leading-relaxed text-muted-foreground;
+  }
+
+  /*
+   * Skip link. Measured: reaching the desk's primary action by keyboard took
+   * 19 tab presses, because the top bar's five section links and the rail's
+   * thirteen module buttons all come first in DOM order. That is the whole
+   * chrome of the app between a keyboard user and the thing they came to do,
+   * on every single page load. Visually hidden until focused, standard
+   * pattern, first focusable element in the document.
+   */
+  .skip-link {
+    @apply absolute left-2 top-2 z-[100] -translate-y-16 rounded-sm bg-primary px-3 py-2
+           text-lead font-semibold text-primary-foreground opacity-0
+           transition-transform focus:translate-y-0 focus:opacity-100;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-2);
+}
+::-webkit-scrollbar-thumb {
+  background: #b7c1cd;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8b95a3;
+}
+
+/* ---------------------------------------------------------------------------
+   Printing the decision brief
+   ---------------------------------------------------------------------------
+   The desk is a screen product and prints badly by nature: a dark ground eats
+   toner, twelve panels do not fit a page, and the nav rail is meaningless on
+   paper. So printing is not "print the app" -- it is "print the one artefact
+   that was designed to leave the screen".
+
+   When the brief is open, everything else is removed from the printed page and
+   the brief becomes the document. When it is not open, printing is disabled
+   rather than producing a wasted page of dark panels: `Ctrl+P` on the desk now
+   prints a single line telling the reader where the printable version is. That
+   is a deliberate refusal, in the same spirit as the rest of the product --
+   better to say "not this" than to hand someone a broken artefact.
+--------------------------------------------------------------------------- */
+/* The indeterminate progress sliver in SolveProgress, used when the number of
+   steps is not known in advance (the fragility sweep skips variables whose
+   flip point is meaningless for the given inputs, so there is no honest
+   denominator to draw a percentage against). Respects reduced-motion: the
+   sliver holds still rather than sliding, and the "N done" counter beside it
+   still carries the real progress. */
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[indeterminate_1\.4s_ease-in-out_infinite\] {
+    animation: none;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  /* Paper is white. Force it, rather than inheriting whichever theme the
+     viewer happened to be in -- a dark-theme print is unreadable and wastes
+     an entire cartridge. */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #10161d !important;
+  }
+
+  /* The app chrome never prints. */
+  body > #root > div > header,
+  body > #root > div > div > nav,
+  .brief-backdrop,
+  .brief-controls,
+  .skip-link {
+    display: none !important;
+  }
+
+  /* With the brief open it becomes the page: unpinned from its fixed
+     overlay, unscrolled, and laid flat. */
+  .brief-shell {
+    position: static !important;
+    inset: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    z-index: auto !important;
+  }
+
+  .brief-page {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  /* Nothing in the brief may be split across a page break -- a
+     recommendation whose caveats landed on page two would be the exact
+     failure this artefact exists to prevent. */
+  .brief-page section,
+  .brief-page header,
+  .brief-page footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Printing the desk itself, with no brief open: refuse, and say where to
+     go. `.brief-shell` is absent from the DOM in that case, so this rule is
+     what the reader gets. */
+  body:not(:has(.brief-shell)) #root {
+    display: none !important;
+  }
+  body:not(:has(.brief-shell))::after {
+    content: 'The desk is a screen tool and does not print usefully. Open a quote and choose "Brief" to print the one-page decision brief instead.';
+    display: block;
+    padding: 24mm 0;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 12pt;
+    line-height: 1.6;
+    color: #10161d;
+    max-width: 34em;
+  }
+}
