@@ -235,7 +235,7 @@ class FragilityReport(BaseModel):
         (
             "The real berth/tide/wait context shown alongside a finding is only "
             "available for draft- and tide-related variables at a port with real "
-            "register or empirical coverage -- it is a few specific figures, not "
+            "register or empirical coverage, it is a few specific figures, not "
             "a full comparison against everything that port's data could show."
         ),
         (
@@ -243,7 +243,7 @@ class FragilityReport(BaseModel):
             "destination port) can't be tested for sensitivity: nothing in the "
             "pricing or scheduling logic currently takes a wait-day figure as an "
             "input, so there is no lever to search for a flip point. The real "
-            "wait data is still shown as context where available -- it just "
+            "wait data is still shown as context where available, it just "
             "doesn't change the recommendation on its own yet."
         ),
     )

@@ -29,7 +29,7 @@ class ManualDeclarationProvider:
 
     def fetch(self, source: PortSource) -> RawCapture:
         raise ManualDeclarationSourceUnavailableError(
-            f"{source.source_name!r} has no automatable source -- "
+            f"{source.source_name!r} has no automatable source, "
             f"coverage_level={source.coverage_level.value}. {source.notes}"
         )
 

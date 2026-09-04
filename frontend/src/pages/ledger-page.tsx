@@ -118,9 +118,9 @@ function LiveLedgerSection() {
   return (
     <Panel
       title="Live Decision Ledger"
-        soWhat={'Every recommendation this system has made, kept so it can be marked right or wrong later. This is how you check whether to trust it — a model that will not record its own calls cannot be held to them.'}
-      meta="Real recommendations this system made, forward-only — never seeded or historical"
-      hint="Every real /quote call appends an entry here automatically. Starts empty and fills forward -- nothing here is seeded or historical."
+        soWhat={'Every recommendation this system has made, kept so it can be marked right or wrong later. This is how you check whether to trust it. A model that will not record its own calls cannot be held to them.'}
+      meta="Real recommendations this system made, forward-only, never seeded or historical"
+      hint="Every real /quote call appends an entry here automatically. Starts empty and fills forward. Nothing here is seeded or historical."
       actions={
         <>
           <Badge variant="secondary" className="text-micro">real, forward-only</Badge>
@@ -130,7 +130,7 @@ function LiveLedgerSection() {
               size="xs"
               onClick={handleReset}
               disabled={resetting}
-              title="Clear every entry -- for starting a clean demo, not for hiding unfavourable results (it's all-or-nothing)"
+              title="Clear every entry: for starting a clean demo, not for hiding unfavourable results (it's all-or-nothing)"
             >
               {resetting ? 'Clearing…' : 'Clear ledger'}
             </Button>
@@ -146,23 +146,23 @@ function LiveLedgerSection() {
           <StatRow label="Scored" value={perf.n_scored} />
           <StatRow
             label="Mean regret $/day"
-            value={perf.mean_realized_regret_usd_per_day != null ? formatNumber(perf.mean_realized_regret_usd_per_day, 2) : '—'}
+            value={perf.mean_realized_regret_usd_per_day != null ? formatNumber(perf.mean_realized_regret_usd_per_day, 2) : 'n/a'}
             tone={perf.mean_realized_regret_usd_per_day != null && perf.mean_realized_regret_usd_per_day > 0 ? 'risk' : 'go'}
           />
-          <StatRow label="Lock accuracy" value={perf.lock_accuracy != null ? `${formatNumber(perf.lock_accuracy * 100, 0)}%` : '—'} />
+          <StatRow label="Lock accuracy" value={perf.lock_accuracy != null ? `${formatNumber(perf.lock_accuracy * 100, 0)}%` : 'n/a'} />
           <StatRow
             label="vs always-lock $/day"
-            value={perf.mean_savings_vs_always_lock_usd_per_day != null ? formatNumber(perf.mean_savings_vs_always_lock_usd_per_day, 2) : '—'}
+            value={perf.mean_savings_vs_always_lock_usd_per_day != null ? formatNumber(perf.mean_savings_vs_always_lock_usd_per_day, 2) : 'n/a'}
           />
           <StatRow
             label="vs always-wait $/day"
-            value={perf.mean_savings_vs_always_wait_usd_per_day != null ? formatNumber(perf.mean_savings_vs_always_wait_usd_per_day, 2) : '—'}
+            value={perf.mean_savings_vs_always_wait_usd_per_day != null ? formatNumber(perf.mean_savings_vs_always_wait_usd_per_day, 2) : 'n/a'}
           />
         </div>
       )}
       {live && live.total === 0 && (
         <p className="p-3 text-body text-muted-foreground">
-          No real recommendations recorded yet. This ledger fills forward as the system is used — it is never
+          No real recommendations recorded yet. This ledger fills forward as the system is used. It is never
           seeded with historical or example entries.
         </p>
       )}
@@ -211,7 +211,7 @@ function LiveLedgerSection() {
                     // honest thing is to say who can do this and why the role
                     // exists at all.
                     <span className="text-micro text-muted-foreground">
-                      pending — a chartering manager records the outcome
+                      pending: a chartering manager records the outcome
                     </span>
                   )}
                 </td>
@@ -250,14 +250,14 @@ function ReplaySection() {
     <Panel
       title="Historical Model Replay"
         soWhat={'What this system would have advised on past dates, scored against what the market actually did. Read the regret figure as the money the advice would have cost or saved per day, versus fixing immediately.'}
-      meta="A retrospective backtest — not real decisions this system made"
+      meta="A retrospective backtest, not real decisions this system made"
       actions={<Badge variant="destructive" className="text-micro">retrospective simulation</Badge>}
     >
       <div className="border-b-2 border-wait bg-wait-soft p-2 text-body text-wait">
-        <span className="font-bold uppercase tracking-wide">{replay?.label ?? 'retrospective model simulation — not decisions this system actually made'}</span>
+        <span className="font-bold uppercase tracking-wide">{replay?.label ?? 'retrospective model simulation, not decisions this system actually made'}</span>
         <p className="mt-0.5 text-foreground">
           A real backtest over a frozen historical period, calibrated on a separate slice of data
-          it was never scored against — never merged with the Live Decision Ledger's own
+          it was never scored against, never merged with the Live Decision Ledger's own
           statistics above.
         </p>
       </div>
@@ -308,9 +308,9 @@ function ReplaySection() {
                   <td className="desk-num text-right">{s.n_decisions}</td>
                   <td className="desk-num text-right">{formatNumber(s.savings_mean, 2)}</td>
                   <td className="desk-num text-right text-muted-foreground">{formatNumber(s.savings_p10, 2)}</td>
-                  <td className="desk-num text-right">{s.decision_value != null ? formatNumber(s.decision_value, 2) : '—'}</td>
-                  <td className="desk-num text-right">{s.regret != null ? formatNumber(s.regret, 2) : '—'}</td>
-                  <td className="desk-num text-right">{s.hit_rate != null ? `${formatNumber(s.hit_rate * 100, 0)}%` : '—'}</td>
+                  <td className="desk-num text-right">{s.decision_value != null ? formatNumber(s.decision_value, 2) : 'n/a'}</td>
+                  <td className="desk-num text-right">{s.regret != null ? formatNumber(s.regret, 2) : 'n/a'}</td>
+                  <td className="desk-num text-right">{s.hit_rate != null ? `${formatNumber(s.hit_rate * 100, 0)}%` : 'n/a'}</td>
                   <td className="desk-num text-right">{formatNumber(s.lock_rate * 100, 0)}%</td>
                 </tr>
               ))}

@@ -410,7 +410,7 @@ export function TopBar({
           aria-label={
             unread > 0
               ? `Alerts, ${unread} unread`
-              : 'Alerts — nothing new'
+              : 'Alerts: nothing new'
           }
           className="relative inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm text-navbar-muted transition-colors hover:bg-white/10 hover:text-navbar-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
         >

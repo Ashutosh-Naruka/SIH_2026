@@ -33,7 +33,7 @@ class CsvXlsxProvider:
     def fetch(self, source: PortSource) -> RawCapture:
         if not source.source_url:
             raise ValueError(
-                f"{source.source_name!r} has no source_url yet -- it is a research lead "
+                f"{source.source_name!r} has no source_url yet, it is a research lead "
                 f"(coverage_level={source.coverage_level.value}), not a fetchable source."
             )
         fetched_at = datetime.now(UTC)

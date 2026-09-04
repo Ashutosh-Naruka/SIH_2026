@@ -63,7 +63,7 @@ export const TOOLS_NAV: readonly NavItem[] = [
   {
     view: 'tonnage-field',
     label: 'Tonnage Field',
-    hint: 'Where the ships are — supply pressure by region, from real position data.',
+    hint: 'Where the ships are: supply pressure by region, from real position data.',
   },
   {
     view: 'fragility',

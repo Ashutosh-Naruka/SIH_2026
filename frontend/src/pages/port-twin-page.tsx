@@ -66,7 +66,7 @@ function SourceQualityBadge({ quality }: { quality: string | null }) {
 
 /** Hours -> a compact "Xd Yh" or "Yh" string. */
 function fmtHours(h: number | null): string {
-  if (h == null) return '—'
+  if (h == null) return 'n/a'
   const days = Math.floor(h / 24)
   const rem = Math.round(h % 24)
   if (days === 0) return `${rem}h`
@@ -138,7 +138,7 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
     <div className="flex h-full flex-col gap-2 overflow-hidden p-2" id="port-twin">
       {/* Query bar */}
       <Panel title="Port Twin"
-        soWhat={'What a port can actually take, from its own published rules and its recorded ship calls. Check it before promising an owner a berth — a ship that cannot enter is not a cheaper ship.'} meta="Real berth constraints, tide rules, and empirical wait/handling data, per port">
+        soWhat={'What a port can actually take, from its own published rules and its recorded ship calls. Check it before promising an owner a berth. A ship that cannot enter is not a cheaper ship.'} meta="Real berth constraints, tide rules, and empirical wait/handling data, per port">
         <div className="flex flex-wrap items-end gap-2 p-1">
           <Field label="Port" className="w-56">
             <Combobox
@@ -244,7 +244,7 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
                         : 'none on record'
                   }
                 />
-                <StatRow label="Binding berth" value={reality.berth_id ?? '—'} />
+                <StatRow label="Binding berth" value={reality.berth_id ?? 'n/a'} />
                 <StatRow
                   label="Draft margin"
                   value={reality.margin_draft_m != null ? `${formatNumber(reality.margin_draft_m, 2)} m` : 'untested'}
@@ -296,7 +296,7 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
 
           {/* Tide */}
           <Panel title="Tide Assessment"
-        soWhat={'Whether the ship needs a high tide to enter or leave, and on whose rule. If it does, the ship can only move in a window each day — build that into the laycan rather than discovering it at the berth.'} meta={reality.tide.authority ?? 'no tide data'}>
+        soWhat={'Whether the ship needs a high tide to enter or leave, and on whose rule. If it does, the ship can only move in a window each day. Build that into the laycan rather than discovering it at the berth.'} meta={reality.tide.authority ?? 'no tide data'}>
             <div className="flex flex-col gap-2 p-1">
               <Badge
                 variant={
@@ -317,7 +317,7 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
                 <StatRow label="Published allowance" value={`${reality.tide.allowance_m} m`} />
               )}
               {reality.tide.source_is_current === false && (
-                <p className="text-caption text-risk">Source document is superseded — not current.</p>
+                <p className="text-caption text-risk">Source document is superseded, not current.</p>
               )}
               {reality.tide.reason && <p className="text-caption text-muted-foreground">{reality.tide.reason}</p>}
               {reality.tide.authority === null && (
@@ -344,7 +344,7 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
                 </div>
               ) : (
                 <p className="mt-1 text-caption text-muted-foreground">
-                  No conflicts — every observed call falls within the declared limits.
+                  No conflicts, every observed call falls within the declared limits.
                 </p>
               )}
             </div>
@@ -383,7 +383,7 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
                           </>
                         ) : (
                           <td colSpan={3} className="text-right text-caption text-muted-foreground">
-                            insufficient sample (n={d.n}) — falls back to static baseline
+                            insufficient sample (n={d.n}), falls back to static baseline
                           </td>
                         )}
                       </tr>
@@ -399,7 +399,7 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
 
           {/* Handling */}
           <Panel title="Handling Productivity"
-        soWhat={'How fast this port actually loads or discharges. A slow port turns a cheap freight rate into an expensive voyage — check this before choosing the port on rate alone.'}>
+        soWhat={'How fast this port actually loads or discharges. A slow port turns a cheap freight rate into an expensive voyage, check this before choosing the port on rate alone.'}>
             {reality.handling?.is_sufficient ? (
               <div className="flex flex-col gap-1 p-1">
                 <StatRow label="Norm (median)" value={`${formatNumber(reality.handling.norm_tpd_median ?? 0)} t/d`} />
@@ -415,7 +415,7 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
               </div>
             ) : (
               <p className="p-2 text-body text-muted-foreground">
-                Insufficient real handling data (n={reality.handling?.n ?? 0}) — no fabricated rate shown.
+                Insufficient real handling data (n={reality.handling?.n ?? 0}), no fabricated rate shown.
               </p>
             )}
           </Panel>
@@ -459,8 +459,8 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
                       <td className="desk-num text-right">{fmtOrDash(b.permissible_draft_m)}</td>
                       <td className="desk-num text-right">{fmtOrDash(b.max_loa_m)}</td>
                       <td className="desk-num text-right">{fmtOrDash(b.max_beam_m)}</td>
-                      <td className="text-caption">{b.commodity_class ?? '—'}</td>
-                      <td className="text-caption text-muted-foreground">{b.berth_function ?? '—'}</td>
+                      <td className="text-caption">{b.commodity_class ?? 'n/a'}</td>
+                      <td className="text-caption text-muted-foreground">{b.berth_function ?? 'n/a'}</td>
                       <td className="text-caption text-muted-foreground">{b.source_doc_id}</td>
                     </tr>
                   ))}
@@ -497,15 +497,15 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
                 <tbody>
                   {calls?.rows.map((r, i) => (
                     <tr key={i}>
-                      <td className="font-semibold">{r.vessel_name ?? '—'}</td>
-                      <td>{r.berth_or_point ?? '—'}</td>
+                      <td className="font-semibold">{r.vessel_name ?? 'n/a'}</td>
+                      <td>{r.berth_or_point ?? 'n/a'}</td>
                       <td className="desk-num text-right">{fmtOrDash(r.arrival_draft_m)}</td>
                       <td className="max-w-40 truncate text-caption" title={r.cargo_raw ?? undefined}>
-                        {r.cargo_raw ?? '—'}
+                        {r.cargo_raw ?? 'n/a'}
                       </td>
-                      <td>{r.load_discharge ?? '—'}</td>
-                      <td className="text-caption text-muted-foreground">{r.arrival_ts?.slice(0, 16) ?? '—'}</td>
-                      <td className="text-caption text-muted-foreground">{r.berth_ts?.slice(0, 16) ?? '—'}</td>
+                      <td>{r.load_discharge ?? 'n/a'}</td>
+                      <td className="text-caption text-muted-foreground">{r.arrival_ts?.slice(0, 16) ?? 'n/a'}</td>
+                      <td className="text-caption text-muted-foreground">{r.berth_ts?.slice(0, 16) ?? 'n/a'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -519,7 +519,7 @@ export function PortTwinPage({ ports }: { ports: PortListing[] }) {
 }
 
 function fmtOrDash(v: number | null, suffix = ''): string {
-  return v == null ? '—' : `${formatNumber(v, 1)}${suffix ? ` ${suffix}` : ''}`
+  return v == null ? 'n/a' : `${formatNumber(v, 1)}${suffix ? ` ${suffix}` : ''}`
 }
 
 function LabeledInput({

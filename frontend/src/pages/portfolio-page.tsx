@@ -266,7 +266,7 @@ function SpotComparison({ result }: { result: PortfolioResponse }) {
       </p>
       {!cheaper && varianceRemoved > 0 && (
         <p className="mt-1 text-micro leading-relaxed text-muted-foreground">
-          That is {formatNumber(premium / varianceRemoved, 2)} paid per dollar of swing removed —
+          That is {formatNumber(premium / varianceRemoved, 2)} paid per dollar of swing removed,
           the price of certainty under your stated stockout cost and sourcing rate.
         </p>
       )}
@@ -435,7 +435,7 @@ export function PortfolioPage({ ports }: { ports: PortListing[] }) {
         </div>
 
         <div className="border-t border-border px-2 pb-2 pt-1">
-          <Field label={`Risk aversion — k = ${form.riskAversionK}`} hint="How many real spot-cost standard deviations you're willing to pay to avoid, for the recommended mix. 0 = minimize expected cost only.">
+          <Field label={`Risk aversion, k = ${form.riskAversionK}`} hint="How many real spot-cost standard deviations you're willing to pay to avoid, for the recommended mix. 0 = minimize expected cost only.">
             <input
               type="range"
               min={0}
@@ -515,7 +515,7 @@ export function PortfolioPage({ ports }: { ports: PortListing[] }) {
           </Panel>
 
           <Panel title="Scenario Context"
-        soWhat={'The demand and rate assumptions this mix was optimised against. If your own view of the season differs, change these and re-run — the recommendation is only as good as the scenario.'} className="lg:col-span-1">
+        soWhat={'The demand and rate assumptions this mix was optimised against. If your own view of the season differs, change these and re-run. The recommendation is only as good as the scenario.'} className="lg:col-span-1">
             <div className="flex flex-col gap-1 p-1">
               <StatRow label="Vessel class" value={result.vessel_class} />
               <StatRow label="As of" value={result.as_of} />
@@ -535,7 +535,7 @@ export function PortfolioPage({ ports }: { ports: PortListing[] }) {
             title="Efficient Frontier"
         soWhat={'Every sensible trade-off between expected cost and how badly a bad year could go. Points below the curve are simply worse on both counts; pick your point on the curve, not off it.'}
             meta="cost vs. risk"
-            hint="Each point is the optimal mix at a different risk_aversion_k -- moving right-to-left trades expected cost for lower variance. The filled dot is your current k setting above."
+            hint="Each point is the optimal mix at a different risk_aversion_k, moving right-to-left trades expected cost for lower variance. The filled dot is your current k setting above."
             className="lg:col-span-2"
           >
             <div className="flex flex-col gap-2 p-1">

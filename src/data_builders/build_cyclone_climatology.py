@@ -133,10 +133,10 @@ BASIN_BOUNDS: Final[dict[str, BasinBox]] = {
         note=(
             "IMD's Arabian Sea sub-basin (north Indian Ocean west of ~77E), mirroring "
             "the Bay of Bengal split above. lon_max stops at 76.9, not 77.0, so this "
-            "box and BAY_OF_BENGAL's lon_min=77.0 don't share a boundary value -- both "
+            "box and BAY_OF_BENGAL's lon_min=77.0 don't share a boundary value, both "
             "are half-open in effect (BasinBox.contains is inclusive on both ends), so "
             "an exact match on the shared coordinate would otherwise double-count. No "
-            "port in opt.network.PortEnum currently sits in this box -- India's west "
+            "port in opt.network.PortEnum currently sits in this box, India's west "
             "coast is not a served lane in this optimizer yet; kept here as a "
             "disclosed gap, not silently omitted."
         ),
@@ -157,14 +157,14 @@ BASIN_BOUNDS: Final[dict[str, BasinBox]] = {
             "Standard Mozambique Channel bounds, between the African mainland and "
             "Madagascar. Covers Beira (-19.81, 34.84) and the Maputo/Nacala origin "
             "labels in CONGESTION_ORIGIN_PORTS. Richards Bay, South Africa "
-            "(-28.79, 32.04) deliberately falls outside (south of lat_min) -- it is a "
+            "(-28.79, 32.04) deliberately falls outside (south of lat_min), it is a "
             "different cyclone regime (open South-West Indian Ocean), not the Channel."
         ),
     ),
     "SE_ASIA": BasinBox(
         lat_min=-3.0, lat_max=3.0, lon_min=114.0, lon_max=119.0,
         note=(
-            "East Kalimantan coal coast (Makassar Strait) -- Balikpapan "
+            "East Kalimantan coal coast (Makassar Strait), Balikpapan "
             "(-1.20, 116.80) and the Samarinda/Muara_Pantai proxy (-0.55, 117.19), "
             "matching CONGESTION_ORIGIN_PORTS's BALIKPAPAN_ID/SAMARINDA_ID."
         ),
@@ -260,7 +260,7 @@ def build_climatology(csv_path: Path = RAW_CSV_PATH) -> pl.DataFrame:
     fixes = _load_fixes(csv_path)
     years_covered = fixes["SEASON"].n_unique()
     if years_covered == 0:
-        raise ValueError(f"No fixes at or after season {MIN_SEASON} in {csv_path} -- nothing to build.")
+        raise ValueError(f"No fixes at or after season {MIN_SEASON} in {csv_path}, nothing to build.")
 
     weekly_frames: list[pl.DataFrame] = []
     for basin, box in BASIN_BOUNDS.items():
@@ -290,7 +290,7 @@ def build_climatology(csv_path: Path = RAW_CSV_PATH) -> pl.DataFrame:
         weekly_frames.append(per_week)
 
     if not weekly_frames:
-        raise ValueError(f"No fix in {csv_path} fell inside any BASIN_BOUNDS box -- nothing to build.")
+        raise ValueError(f"No fix in {csv_path} fell inside any BASIN_BOUNDS box, nothing to build.")
 
     result = pl.concat(weekly_frames, how="vertical")
     result = result.with_columns(

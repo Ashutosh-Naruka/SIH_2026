@@ -192,7 +192,7 @@ def archive_all() -> list[ArchiveResult]:
 
 def _format_result(result: ArchiveResult) -> str:
     if not result.ok:
-        return f"{result.port_id.value}: FAILED -- {result.error}"
+        return f"{result.port_id.value}: FAILED, {result.error}"
     novelty = "new content" if result.is_new_content else "re-observation of known content"
     lines = [
         f"{result.port_id.value}: {novelty} (sha256={result.content_sha256[:12]}...)",

@@ -30,7 +30,7 @@ function ResultRow({ r }: { r: BackhaulOpportunityScore }) {
             </span>
           </Tooltip>
         ) : (
-          <Tooltip content="No real TC quote for this class/date — ranked by cargo probability alone.">
+          <Tooltip content="No real TC quote for this class/date, ranked by cargo probability alone.">
             <span className="desk-num text-body font-semibold text-muted-foreground">
               score {formatNumber(r.score, 3)}
             </span>
@@ -90,9 +90,9 @@ export function BackhaulPanel({
     <Panel
       className="h-full"
       title="Backhaul Opportunity"
-      soWhat={'Whether there is a paying cargo for the return leg instead of sailing home empty. A real backhaul lowers the rate an owner will accept — if one exists, say so in the negotiation.'}
-      meta="informational — never moves the recommendation"
-      hint="Score = P(cargo) × today's real TC quote × window − real ballast fuel cost. The TC quote is class-level, identical at every port shown, so this ranks by real cargo likelihood and ballast cost — not by 'rates are better here'."
+      soWhat={'Whether there is a paying cargo for the return leg instead of sailing home empty. A real backhaul lowers the rate an owner will accept. If one exists, say so in the negotiation.'}
+      meta="informational, never moves the recommendation"
+      hint="Score = P(cargo) × today's real TC quote × window − real ballast fuel cost. The TC quote is class-level, identical at every port shown, so this ranks by real cargo likelihood and ballast cost, not by 'rates are better here'."
       actions={
         vessel && (
           <button
@@ -109,7 +109,7 @@ export function BackhaulPanel({
     >
       {!vessel ? (
         <div className="flex h-full items-center justify-center p-2 text-center text-body text-muted-foreground">
-          Add a real vessel under "Vessels in hand" to score backhaul opportunities for it — the
+          Add a real vessel under "Vessels in hand" to score backhaul opportunities for it. The
           target class above isn't a specific ship to reposition.
         </div>
       ) : error ? (
@@ -117,7 +117,7 @@ export function BackhaulPanel({
       ) : !results ? (
         <div className="flex h-full items-center justify-center p-2 text-center text-body text-muted-foreground">
           {loading
-            ? `Scoring ${vessel.vessel_id} against every other real port — a multi-second sweep, not cached.`
+            ? `Scoring ${vessel.vessel_id} against every other real port: a multi-second sweep, not cached.`
             : `Score ${vessel.vessel_id}'s backhaul opportunity after discharging at ${prettyPort(dischargePort)}.`}
         </div>
       ) : (

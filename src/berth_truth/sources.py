@@ -104,7 +104,7 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
                 "beam, berth, cargo, shipper/receiver/stevedore, D/L flag, three distinct "
                 "timestamps (ARVL/READY/BERTH), ETD/SLD, TOTAL/NORM/DAY'S-actual, MQ/BQ-to-date, "
                 "BALANCE, event-code remarks, and high-tide restriction notes. Column order in "
-                "extract_text() is interleaved -- positional extraction required, see "
+                "extract_text() is interleaved, positional extraction required, see "
                 "providers.pdf_report."
             ),
         ),
@@ -136,7 +136,7 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
             notes=(
                 "Directly fetched and parsed 2026-08-27. Vessel name, nationality, position "
                 "('ROADS' = at anchorage), draft, arrival date, agent, tonnage, commodity, "
-                "shipper. No berth-time column -- waits must be derived by differencing "
+                "shipper. No berth-time column, waits must be derived by differencing "
                 "consecutive captures (evidence_class=SNAPSHOT_TRANSITION). The index page "
                 "listing successive uploads was not located this session; the URL's timestamp "
                 "component was read from a single located instance, not enumerated."
@@ -174,7 +174,7 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.NEWCASTLE_AU: (
         PortSource(
             port=PortEnum.NEWCASTLE_AU,
-            source_name="Port Authority of NSW -- Newcastle Harbour daily vessel movements",
+            source_name="Port Authority of NSW: Newcastle Harbour daily vessel movements",
             source_url="https://www.portauthoritynsw.com.au/port-operations/newcastle-harbour/newcastle-harbour-daily-vessel-movements",
             doc_format="Official daily vessel movements page",
             cadence="daily",
@@ -200,9 +200,9 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.GOPALPUR: (
         PortSource(
             port=PortEnum.GOPALPUR,
-            source_name="Gopalpur Ports Ltd (Adani) -- research lead",
+            source_name="Gopalpur Ports Ltd (Adani): research lead",
             source_url="",
-            doc_format="unconfirmed -- live schedule reportedly exists per search",
+            doc_format="unconfirmed, live schedule reportedly exists per search",
             cadence="unknown",
             adapter=AdapterKind.HTML_TABLE,
             coverage_level=CoverageLevel.E,
@@ -220,9 +220,9 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.HALDIA: (
         PortSource(
             port=PortEnum.HALDIA,
-            source_name="Syama Prasad Mookerjee Port Authority -- Haldia Dock Complex",
+            source_name="Syama Prasad Mookerjee Port Authority: Haldia Dock Complex",
             source_url="https://smportkolkata.shipping.gov.in/smpk/hld/en/",
-            doc_format="unconfirmed -- official port site, specific vessel-line-up document not located",
+            doc_format="unconfirmed, official port site, specific vessel-line-up document not located",
             cadence="unknown",
             adapter=AdapterKind.HTML_TABLE,
             coverage_level=CoverageLevel.D,
@@ -231,7 +231,7 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
             notes=(
                 "Official Haldia Dock Complex site confirmed (a .gov.in Ministry of Ports "
                 "statutory body). A specific daily vessel-position/draft-forecast page or "
-                "document was not located and fetched this session -- searched, not verified. "
+                "document was not located and fetched this session: searched, not verified. "
                 "Recorded at Level D (authoritative site, live feed unconfirmed) rather than "
                 "claiming Level B/C without having parsed a real document."
             ),
@@ -240,9 +240,9 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.SAGAR_SANDHEADS: (
         PortSource(
             port=PortEnum.SAGAR_SANDHEADS,
-            source_name="Sandheads vessel-at-anchorage information -- research lead",
+            source_name="Sandheads vessel-at-anchorage information: research lead",
             source_url="",
-            doc_format="unconfirmed -- reportedly includes anchoring time, draft, LOA, cargo",
+            doc_format="unconfirmed, reportedly includes anchoring time, draft, LOA, cargo",
             cadence="unknown",
             adapter=AdapterKind.HTML_TABLE,
             coverage_level=CoverageLevel.E,
@@ -259,9 +259,9 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.GLADSTONE_AU: (
         PortSource(
             port=PortEnum.GLADSTONE_AU,
-            source_name="North Queensland Bulk Ports / Gladstone Ports Corporation -- shipping movements (QSHIPS)",
+            source_name="North Queensland Bulk Ports / Gladstone Ports Corporation: shipping movements (QSHIPS)",
             source_url="",
-            doc_format="unconfirmed -- official shipping movements / QSHIPS system reported",
+            doc_format="unconfirmed, official shipping movements / QSHIPS system reported",
             cadence="unknown",
             adapter=AdapterKind.HTML_TABLE,
             coverage_level=CoverageLevel.E,
@@ -273,9 +273,9 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.SINGAPORE: (
         PortSource(
             port=PortEnum.SINGAPORE,
-            source_name="Maritime and Port Authority of Singapore -- vessel arrival/departure",
+            source_name="Maritime and Port Authority of Singapore: vessel arrival/departure",
             source_url="",
-            doc_format="unconfirmed -- MPA / OCEANS-X system reported",
+            doc_format="unconfirmed, MPA / OCEANS-X system reported",
             cadence="unknown",
             adapter=AdapterKind.JSON_API,
             coverage_level=CoverageLevel.E,
@@ -288,7 +288,7 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.RICHARDS_BAY: (
         PortSource(
             port=PortEnum.RICHARDS_BAY,
-            source_name="Transnet / Richards Bay Coal Terminal -- constraints only",
+            source_name="Transnet / Richards Bay Coal Terminal: constraints only",
             source_url="",
             doc_format="terminal constraint/handling documentation reported strong; live line-up unconfirmed",
             cadence="static",
@@ -302,7 +302,7 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.BEIRA: (
         PortSource(
             port=PortEnum.BEIRA,
-            source_name="CFM / Cornelder de Mocambique -- constraints only",
+            source_name="CFM / Cornelder de Mocambique: constraints only",
             source_url="",
             doc_format="operational/constraint documentation reported; official live schedule unconfirmed",
             cadence="static",
@@ -316,9 +316,9 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.MUARA_PANTAI: (
         PortSource(
             port=PortEnum.MUARA_PANTAI,
-            source_name="Mahakam delta coal transshipment -- research lead",
+            source_name="Mahakam delta coal transshipment: research lead",
             source_url="",
-            doc_format="unconfirmed -- anchorage/transshipment operation, public movements exist",
+            doc_format="unconfirmed, anchorage/transshipment operation, public movements exist",
             cadence="unknown",
             adapter=AdapterKind.MANUAL_DECLARATION,
             coverage_level=CoverageLevel.E,
@@ -330,7 +330,7 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.HAMPTON_ROADS: (
         PortSource(
             port=PortEnum.HAMPTON_ROADS,
-            source_name="Norfolk Southern / Lamberts Point -- constraints only",
+            source_name="Norfolk Southern / Lamberts Point: constraints only",
             source_url="",
             doc_format="terminal constraint documentation reported strong; public live coal-terminal schedule weaker",
             cadence="static",
@@ -344,7 +344,7 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
     PortEnum.BALIKPAPAN: (
         PortSource(
             port=PortEnum.BALIKPAPAN,
-            source_name="Kariangau Terminal schedule -- unresolved relevance",
+            source_name="Kariangau Terminal schedule: unresolved relevance",
             source_url="",
             doc_format="an official Kariangau terminal schedule reportedly exists",
             cadence="unknown",
@@ -355,14 +355,14 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
             notes=(
                 "NOT SUBSTITUTED: whether Kariangau is the actual bulk-coal operation this "
                 "route intends was not confirmed this session. Recorded as unresolved rather "
-                "than assumed equivalent -- see port_master.py's note on this port."
+                "than assumed equivalent, see port_master.py's note on this port."
             ),
         ),
     ),
     PortEnum.VOSTOCHNY_RU: (
         PortSource(
             port=PortEnum.VOSTOCHNY_RU,
-            source_name="NHK Maritime Services -- Vostochny port page",
+            source_name="NHK Maritime Services: Vostochny port page",
             source_url="https://www.nhk-maritime.com/ports/vostochny-port",
             doc_format="operator/agency port description (PPK-3 berth specs)",
             cadence="static",
@@ -374,7 +374,7 @@ PORT_SOURCES: dict[PortEnum, tuple[PortSource, ...]] = {
         ),
         PortSource(
             port=PortEnum.VOSTOCHNY_RU,
-            source_name="Credo-Trans -- Port of Vostochny overview",
+            source_name="Credo-Trans: Port of Vostochny overview",
             source_url="https://credo-trans.com/russias-port-port-of-vostochny/",
             doc_format="operator/agency port description",
             cadence="static",
@@ -421,7 +421,7 @@ PORTWATCH_MAPPING_STATUS: dict[PortEnum, tuple[PortWatchMappingStatus, str]] = {
     PortEnum.MUARA_PANTAI: (
         PortWatchMappingStatus.PROXY,
         (
-            "Samarinda_ID -- an anchorage in the same Mahakam delta coal complex, not Muara "
+            "Samarinda_ID, an anchorage in the same Mahakam delta coal complex, not Muara "
             "Pantai itself; already disclosed as a proxy in build_geography.PORT_COORDS's "
             "own pre-existing comment. Reduced-confidence: traffic/congestion figures for "
             "MUARA_PANTAI describe Samarinda's port calls, not measured Muara Pantai activity."
@@ -433,7 +433,7 @@ PORTWATCH_MAPPING_STATUS: dict[PortEnum, tuple[PortWatchMappingStatus, str]] = {
     PortEnum.VOSTOCHNY_RU: (
         PortWatchMappingStatus.IDENTITY_CONFIRMED,
         (
-            "Vostochny_RU -- the CSV's own rows self-declare portname='Vostochnyy', "
+            "Vostochny_RU, the CSV's own rows self-declare portname='Vostochnyy', "
             "country='Russian Federation', ISO3='RUS' (portid=port1374); confirmed by "
             "reading the file directly, not inferred from proximity."
         ),

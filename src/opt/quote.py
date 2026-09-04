@@ -226,7 +226,7 @@ def quote(
         on_progress(ProgressStage(key="forecast_load", label="Loading real forecast", status="done", elapsed_ms=(_perf() - _t0) * 1000.0))
     if target_class not in quotes:
         raise InsufficientMarketDataError(
-            f"No real TC quote/forecast for {target_class.value} as of {resolved_as_of} — "
+            f"No real TC quote/forecast for {target_class.value} as of {resolved_as_of}, "
             f"cannot price a {cargo_volume_dwt:,.0f} dwt cargo lot. Try a different as_of date."
         )
     all_fans = [f for class_fans in fans_by_class.values() for f in class_fans]

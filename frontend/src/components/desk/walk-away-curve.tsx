@@ -12,7 +12,7 @@ import { useMoney } from '@/lib/money-context'
  *  all of them. */
 const SO_WHAT =
   'The highest rate at which this cargo still clears its own cost. If ' +
-  'today\'s market is above this line, fixing now loses money on paper — go ' +
+  'today\'s market is above this line, fixing now loses money on paper. Go ' +
   'back to the broker, or wait for the market to come to you.'
 
 const H = 168
@@ -233,33 +233,38 @@ export function WalkAwayCurve({ quote }: { quote: QuoteResult }) {
           </svg>
         </div>
 
-        <div className="mt-auto space-y-1 border-t border-border px-2 py-2">
-          <div className="stat-row">
-            <span className="stat-label">Walk-away line today</span>
-            <span className="stat-value font-semibold text-go">{money(decisionLine)}</span>
-          </div>
-          {/* When the weather buffer moves the line, say so and by how much --
-              otherwise the figure above silently disagrees with the curve's
-              own day-1 point and there is nothing on screen to explain it. */}
-          {hasWeatherLift && (
+        <div className="mt-auto border-t border-border px-2 py-2">
+          {/* Columns, not full-width rows: this panel spans the whole desk, and
+              a label pinned left against a value pinned right that far away is
+              genuinely hard to read. See .stat-grid in index.css. */}
+          <div className="stat-grid">
+            <div className="stat-row">
+              <span className="stat-label">Walk-away line today</span>
+              <span className="stat-value font-semibold text-go">{money(decisionLine)}</span>
+            </div>
+            {/* When the weather buffer moves the line, say so and by how much --
+                otherwise the figure above silently disagrees with the curve's
+                own day-1 point and there is nothing on screen to explain it. */}
+            {hasWeatherLift && (
+              <div className="stat-row">
+                <span className="stat-label">
+                  of which weather buffer {weatherLift > 0 ? 'raises it by' : 'lowers it by'}
+                </span>
+                <span className="stat-value text-caption text-muted-foreground">
+                  {money(Math.abs(weatherLift))}
+                </span>
+              </div>
+            )}
             <div className="stat-row">
               <span className="stat-label">
-                of which weather buffer {weatherLift > 0 ? 'raises it by' : 'lowers it by'}
+                {isAbove ? "Today's rate is above it by" : "Today's rate is below it by"}
               </span>
-              <span className="stat-value text-caption text-muted-foreground">
-                {money(Math.abs(weatherLift))}
+              <span className={`stat-value font-semibold ${isAbove ? 'text-wait' : 'text-go'}`}>
+                {money(Math.abs(gap))}
               </span>
             </div>
-          )}
-          <div className="stat-row">
-            <span className="stat-label">
-              {isAbove ? "Today's rate is above it by" : "Today's rate is below it by"}
-            </span>
-            <span className={`stat-value font-semibold ${isAbove ? 'text-wait' : 'text-go'}`}>
-              {money(Math.abs(gap))}
-            </span>
           </div>
-          <p className="pt-1 text-caption leading-relaxed text-muted-foreground">
+          <p className="pt-2 text-caption leading-relaxed text-muted-foreground">
             {isAbove ? (
               <>
                 At {money(today)} today you are paying more than the model thinks this charter is
@@ -278,7 +283,7 @@ export function WalkAwayCurve({ quote }: { quote: QuoteResult }) {
                 decision line to {money(decisionLine)}, which is the figure the verdict uses.{' '}
               </>
             )}
-            The final point is where the horizon ends, not a forecast — with no time left to wait, the
+            The final point is where the horizon ends, not a forecast. With no time left to wait, the
             line meets the strike by construction.
           </p>
         </div>

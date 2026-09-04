@@ -153,7 +153,7 @@ def run_ablation() -> AblationReport:
             f"ADOPT B. Pooled, horizon-averaged test pinball_0.5 improves by "
             f"{test_improve:.1%} (threshold {ADOPTION_MIN_RELATIVE_IMPROVEMENT:.1%}), "
             f"and valid agrees in direction ({valid_improve:.1%}). Both splits "
-            "point the same way -- wiring M1 into ml.live_forecast is justified "
+            "point the same way, wiring M1 into ml.live_forecast is justified "
             "by this result."
         )
     else:
@@ -161,7 +161,7 @@ def run_ablation() -> AblationReport:
             f"DO NOT ADOPT B. Pooled, horizon-averaged test pinball_0.5 change is "
             f"{test_improve:+.1%} (need > {ADOPTION_MIN_RELATIVE_IMPROVEMENT:.1%} "
             f"AND valid agreement; valid change is {valid_improve:+.1%}). Per the "
-            "P3 instruction, this is not forced into the pricing path -- M1 ships "
+            "P3 instruction, this is not forced into the pricing path, M1 ships "
             "as an honestly-labelled decision-support signal with this ablation "
             "result surfaced, not silently wired into ml.live_forecast."
         )

@@ -306,7 +306,7 @@ def _resolve_one(master: pl.DataFrame, route_family: RouteFamily, as_of: date | 
                 f"{'...' if len(observations) > 3 else ''}), but denominated in "
                 f"{', '.join(non_day_units) or 'a non-USD/day unit'}, not USD/day. Converting a voyage "
                 "rate in this unit to a $/day TC-equivalent requires cargo-quantity, full-voyage-"
-                "duration, and bunker-cost assumptions this module does not have real evidence for -- "
+                "duration, and bunker-cost assumptions this module does not have real evidence for, "
                 "not attempted, to avoid stacking assumptions on an already-thin sample. Falling back "
                 "to the class benchmark."
             ),
@@ -322,9 +322,9 @@ def _resolve_one(master: pl.DataFrame, route_family: RouteFamily, as_of: date | 
     else:
         evidence = RouteEvidence.MODELLED
         reason = (
-            f"Only {n} real USD/day route observation(s) for {route_family.value} -- below the "
+            f"Only {n} real USD/day route observation(s) for {route_family.value}, below the "
             f"{MIN_ROUTE_OBS}-observation bar for a validated estimate (tonnage.supplycurve's own "
-            f"precedent). Modelled estimate: basis {mean:+.1%}, std {std:.1%} -- clearly labelled "
+            f"precedent). Modelled estimate: basis {mean:+.1%}, std {std:.1%}, clearly labelled "
             "MODELLED, not OBSERVED, and carries a small-sample-inflated uncertainty."
         )
     return RouteBasisResult(

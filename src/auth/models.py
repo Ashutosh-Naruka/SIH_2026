@@ -58,7 +58,7 @@ RANK: Final[dict[Role, int]] = {
 #: What each role is for, in the words the UI shows a person choosing one.
 ROLE_DESCRIPTION: Final[dict[Role, str]] = {
     Role.VIEWER: (
-        "Can run and read everything — quotes, season plans, fragility, the "
+        "Can run and read everything, quotes, season plans, fragility, the "
         "portfolio frontier, the ledger. Cannot record an outcome or change "
         "an account."
     ),

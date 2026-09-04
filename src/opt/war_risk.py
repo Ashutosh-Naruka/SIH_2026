@@ -321,7 +321,7 @@ def war_risk_premium_usd(
         basis = (
             f"ESTIMATE, NOT A MARKET QUOTE: {rate:.3f}% of hull value per 7-day period x "
             f"{periods} period(s), using this system's own documented placeholder rate. Real "
-            "additional war-risk premium is negotiated per fixture and is not published -- "
+            "additional war-risk premium is negotiated per fixture and is not published, "
             "supply your own rate to replace this. Areas entered: "
             f"{', '.join(areas)}. Multiple areas charged once, not per area."
         )

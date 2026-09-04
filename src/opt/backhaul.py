@@ -264,7 +264,7 @@ def evaluate_credit_evidence() -> CreditEvidenceVerdict:
             reason=(
                 "FactPortCall carries no rate/freight/$ field of any kind "
                 f"(checked all {len(field_names)} fields: quantities, "
-                "timestamps, identity and provenance only) -- there is no "
+                "timestamps, identity and provenance only). There is no "
                 "realized price anywhere in this table to correlate an "
                 "observed pairing against, so a $/MT credit cannot be "
                 "estimated from this data regardless of sample size. "
@@ -277,7 +277,7 @@ def evaluate_credit_evidence() -> CreditEvidenceVerdict:
         reason=(
             f"FactPortCall now carries a candidate rate-bearing field "
             f"{matches} that did not exist when this gate was last "
-            "reviewed -- a real correlation/validation study against "
+            "reviewed, a real correlation/validation study against "
             "observed pairings is required before enabling a $/MT credit; "
             "this function deliberately still returns "
             "sufficient_for_credit=False until that study exists and this "
@@ -411,17 +411,17 @@ def backhaul_opportunity_score(
     if base_tce_usd_per_day is None:
         limitations.append(
             "No real TC quote/forecast available for this vessel class as of the requested "
-            "date -- score_usd could not be computed; ranked by cargo_probability (score) alone."
+            "date, score_usd could not be computed; ranked by cargo_probability (score) alone."
         )
     if not probability_is_real:
         limitations.append(
-            f"{candidate_load_port.name} has no real PortWatch/tonnage-field coverage -- "
+            f"{candidate_load_port.name} has no real PortWatch/tonnage-field coverage, "
             "cargo_probability used a neutral 0.5 prior, not a calibrated estimate."
         )
     if not timing_feasible:
         limitations.append(
             f"ballast transit ({ballast_days:.1f}d) exceeds the assumed window "
-            f"({assumed_window_days}d) -- score zeroed, not a real opportunity at this speed/window."
+            f"({assumed_window_days}d), score zeroed, not a real opportunity at this speed/window."
         )
     if not feasibility.is_feasible:
         limitations.append(f"vessel does not pass class/dimension feasibility at {candidate_load_port.name}: {feasibility.reason}")
@@ -434,13 +434,13 @@ def backhaul_opportunity_score(
     if pairing.cross_port and not pairing.load_port_has_coverage:
         limitations.append(
             f"{candidate_load_port.name} has no real berth_truth fact_port_call "
-            f"coverage at all -- pairing_evidence against {discharge_port.name} is "
+            f"coverage at all, pairing_evidence against {discharge_port.name} is "
             "structurally empty (0 possible matches), not evidence of a low pairing rate."
         )
     elif not pairing.is_sufficient:
         limitations.append(
             f"pairing_evidence is based on only {pairing.n_total_vessels} vessel(s) "
-            f"(< {MIN_PAIRING_OBS}) -- too few to treat pairing_rate as stable."
+            f"(< {MIN_PAIRING_OBS}), too few to treat pairing_rate as stable."
         )
 
     return BackhaulOpportunityScore(

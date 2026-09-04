@@ -290,7 +290,7 @@ def harvest(
             _accumulate_day(lines, accumulators)
 
         if not any_day_fetched:
-            LOGGER.warning(f"ISO week {iso_year}-W{iso_week:02d}: every day failed to fetch -- skipping, not writing a false zero.")
+            LOGGER.warning(f"ISO week {iso_year}-W{iso_week:02d}: every day failed to fetch, skipping, not writing a false zero.")
             continue
 
         retrieved_at = datetime.now(UTC).isoformat()
@@ -326,7 +326,7 @@ def write_pull_notes(
 
     notes_path.parent.mkdir(parents=True, exist_ok=True)
     notes_path.write_text(
-        "# GDELT Chokepoint Conflict-Intensity Weekly Series -- Pull Notes\n\n"
+        "# GDELT Chokepoint Conflict-Intensity Weekly Series: Pull Notes\n\n"
         f"**Retrieval date:** {datetime.now(UTC).date().isoformat()}\n"
         "**Source:** GDELT 2.0 Event Database, daily export "
         f"(`{DAILY_EVENTS_URL_TEMPLATE}`)\n"
@@ -343,7 +343,7 @@ def write_pull_notes(
         "Annual Conference, San Francisco, 2013.\n\n"
         "See https://www.gdeltproject.org/about.html#termsofuse for the full terms.\n\n"
         "## Honesty note\n\n"
-        "GDELT counts media coverage, not events -- coverage volume is driven "
+        "GDELT counts media coverage, not events. Coverage volume is driven "
         "by news attention as much as by ground truth. Any consumer of this "
         "table must z-score each chokepoint against its OWN history and never "
         "compare raw event_count across chokepoints. See "

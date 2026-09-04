@@ -193,7 +193,7 @@ function RouteEvidenceNote({
       <p className="panel-note border-wait/40 text-wait-on-soft">
         <span className="font-semibold">This price is for the vessel class, not for this route.</span>{' '}
         No published route-level rate for this origin clears the evidence bar, so the forecast falls
-        back to the class benchmark — which means two origins on different continents can return the
+        back to the class benchmark, which means two origins on different continents can return the
         same number. Use it to time the market, not to choose between load ports; the landed-cost
         panel is where distance and fuel actually differ.
       </p>
@@ -206,7 +206,7 @@ function RouteEvidenceNote({
         Adjusted for this route{pct ? ` by ${pct}` : ''}.
       </span>{' '}
       {evidence === 'MODELLED'
-        ? 'Built from real published route-level rates for this origin, but a thin sample — the adjustment is modelled and its uncertainty is deliberately wide.'
+        ? 'Built from real published route-level rates for this origin, but a thin sample. The adjustment is modelled and its uncertainty is deliberately wide.'
         : 'Built from enough real published route-level rates for this origin to validate the adjustment against the class benchmark.'}
     </p>
   )
@@ -273,7 +273,7 @@ export function RateForecastTable({
             <th className="text-center">Dir</th>
             <th className="text-right">
               <Tooltip
-                content="Confidence in the direction shown (Dir), not in the forecast overall — always ≥50% by construction, since Dir always names whichever direction the forecast favours."
+                content="Confidence in the direction shown (Dir), not in the forecast overall. It is always ≥50% by construction, since Dir always names whichever direction the forecast favours."
                 className="cursor-help"
               >
                 <span className="border-b border-dotted border-muted-foreground/50">Conf</span>
@@ -293,7 +293,7 @@ export function RateForecastTable({
                 ${formatNumber(r.p90_usd_per_day)}
               </td>
               <td className="desk-num text-right">
-                {r.p50_usd_per_mt != null ? `$${r.p50_usd_per_mt.toFixed(2)}` : '—'}
+                {r.p50_usd_per_mt != null ? `$${r.p50_usd_per_mt.toFixed(2)}` : 'n/a'}
               </td>
               <td>
                 <div className="flex justify-center">

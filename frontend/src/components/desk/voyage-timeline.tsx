@@ -81,8 +81,8 @@ export function VoyageTimeline({ quote, ports }: { quote: QuoteResult; ports: Po
     prettyPort(ports.find((p) => p.code === code)?.name ?? code)
 
   const hint =
-    'Every segment is a real figure shown elsewhere on the desk — laycan, berth queue, transit and ' +
-    'weather buffer — placed on one time axis. The end date sums them: a projection, not a commitment.'
+    'Every segment is a real figure shown elsewhere on the desk: laycan, berth queue, transit and ' +
+    'weather buffer, all placed on one time axis. The end date sums them: a projection, not a commitment.'
 
   const dayOf = (iso: string) =>
     Math.round(
@@ -130,7 +130,7 @@ export function VoyageTimeline({ quote, ports }: { quote: QuoteResult; ports: Po
       days: laycanStart,
       tone: 'idle' as const,
       icon: Clock,
-      detail: `${laycanStart} days from today until the laycan window opens on ${formatShortDate(addDays(quote.as_of, laycanStart))}. Nothing is committed during this time — it is the gap between deciding and being able to load.`,
+      detail: `${laycanStart} days from today until the laycan window opens on ${formatShortDate(addDays(quote.as_of, laycanStart))}. Nothing is committed during this time. It is the gap between deciding and being able to load.`,
     },
     {
       key: 'load',
@@ -305,7 +305,7 @@ export function VoyageTimeline({ quote, ports }: { quote: QuoteResult; ports: Po
                 </span>
               </div>
               <p className="mt-1 text-micro leading-relaxed text-muted-foreground">
-                Hover or click a segment for what it is. Projected end is the sum of the segments —
+                Hover or click a segment for what it is. Projected end is the sum of the segments:
                 the <Term term="laycan">laycan</Term> opening, both berth queues, transit and the
                 weather buffer. A computed projection from real inputs, not a committed schedule.
               </p>

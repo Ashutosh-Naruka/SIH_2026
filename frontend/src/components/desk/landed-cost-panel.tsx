@@ -95,7 +95,7 @@ function ComponentRow({
             usdPerMt == null ? 'text-muted-foreground' : 'text-foreground',
           )}
         >
-          {usdPerMt == null ? '—' : `$${formatNumber(usdPerMt, 2)}`}
+          {usdPerMt == null ? 'n/a' : `$${formatNumber(usdPerMt, 2)}`}
         </span>
       </div>
     </div>
@@ -176,7 +176,7 @@ export function LandedCostPanel({
       <Panel className="h-full" title="Landed Cost"
       soWhat={SO_WHAT} meta="$/MT">
         <div className="flex h-full items-center justify-center text-center text-body text-muted-foreground">
-          No real transit-day estimate for this route — freight can't be converted to $/MT yet.
+          No real transit-day estimate for this route, so freight can't be converted to $/MT yet.
         </div>
       </Panel>
     )
@@ -190,7 +190,7 @@ export function LandedCostPanel({
       title="Landed Cost"
       soWhat={SO_WHAT}
       meta={`${shown.components_included.length}/5 components real`}
-      hint="What a tonne actually costs delivered: freight, waiting time, handling, demurrage and the commodity itself, each labelled with where its figure came from. A component that cannot be priced states why instead of quietly counting as zero. Fill in your own handling, demurrage, laytime and commodity assumptions below to complete the total — this desk will never substitute an invented default for a commercial term you have not given it."
+      hint="What a tonne actually costs delivered: freight, waiting time, handling, demurrage and the commodity itself, each labelled with where its figure came from. A component that cannot be priced states why instead of quietly counting as zero. Fill in your own handling, demurrage, laytime and commodity assumptions below to complete the total. This desk will never substitute an invented default for a commercial term you have not given it."
       flush
     >
       <div>

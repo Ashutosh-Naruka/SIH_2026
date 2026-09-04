@@ -270,7 +270,7 @@ def compute_landed_cost(
         handling_cost_provenance = Provenance.DECLARED
         handling_cost_reason = "user-declared handling rate"
     else:
-        handling_cost_reason = "no handling_rate_usd_per_mt supplied -- no repo-derived $/MT handling tariff exists (opt.network.Port.handling_rate_tph is a throughput rate, not a price)"
+        handling_cost_reason = "no handling_rate_usd_per_mt supplied: no repo-derived $/MT handling tariff exists (opt.network.Port.handling_rate_tph is a throughput rate, not a price)"
 
     # -- Demurrage: caveat, user-declared only, needs a real exposure. ------
     demurrage_cost_usd_per_mt: float | None = None
@@ -288,9 +288,9 @@ def compute_landed_cost(
         else:
             demurrage_cost_reason = "rate and allowance supplied, but no sufficient empirical port-time estimate to compare against"
     elif request.demurrage_usd_per_day is not None or request.laytime_allowance_days is not None:
-        demurrage_cost_reason = "both demurrage_usd_per_day and laytime_allowance_days are required -- only one was supplied"
+        demurrage_cost_reason = "both demurrage_usd_per_day and laytime_allowance_days are required: only one was supplied"
     else:
-        demurrage_cost_reason = "no demurrage_usd_per_day/laytime_allowance_days supplied -- these are contractual terms, never assumed"
+        demurrage_cost_reason = "no demurrage_usd_per_day/laytime_allowance_days supplied: these are contractual terms, never assumed"
 
     # -- War-risk premium: its own line, never folded into freight. ---------
     # Unavailable unless BOTH an origin port (to resolve the real route) and
@@ -304,12 +304,12 @@ def compute_landed_cost(
     war_risk_rate: float | None = None
     war_risk_rate_is_caller_supplied = False
     if request.origin_port is None:
-        war_risk_reason = "no origin_port supplied -- the route, and therefore which war-risk Listed Areas it enters, cannot be resolved"
+        war_risk_reason = "no origin_port supplied, so the route, and therefore which war-risk Listed Areas it enters, cannot be resolved"
     elif request.hull_value_usd is None:
         war_risk_areas = listed_areas_on_route(request.origin_port, request.dest_port)
         war_risk_reason = (
             f"route enters {len(war_risk_areas)} war-risk Listed Area(s) "
-            f"({', '.join(war_risk_areas) or 'none'}), but no hull_value_usd was supplied -- "
+            f"({', '.join(war_risk_areas) or 'none'}), but no hull_value_usd was supplied, "
             "a vessel's insured hull value is a real commercial fact this module never assumes"
         )
     else:
@@ -321,7 +321,7 @@ def compute_landed_cost(
             rate_pct_per_7_days=request.war_risk_rate_pct_per_7_days,
         )
         if premium is None:
-            war_risk_reason = "route enters no Joint War Committee Listed Area -- no additional war-risk premium is owed"
+            war_risk_reason = "route enters no Joint War Committee Listed Area, no additional war-risk premium is owed"
         else:
             war_risk_usd_per_mt = premium.premium_usd / request.cargo_volume_mt
             war_risk_provenance = premium.provenance
@@ -353,12 +353,12 @@ def compute_landed_cost(
                 commodity_price_usd_per_mt = point.value
                 commodity_price_provenance = Provenance.OBSERVED
                 commodity_price_reason = (
-                    f"World Bank/FRED, real observation as of {point.observation_date} -- "
+                    f"World Bank/FRED, real observation as of {point.observation_date}, "
                     "standard benchmark grade (see module docstring); an off-benchmark "
                     "real cargo's true price would differ, not adjusted here."
                 )
             else:
-                commodity_price_reason = f"unrecognised unit {point.unit!r} for {series_id} -- not converted, raw value still available"
+                commodity_price_reason = f"unrecognised unit {point.unit!r} for {series_id}, not converted, raw value still available"
 
     # -- FX: P4 real data, applied as a conversion, not a summed cost. ------
     fx_rate: float | None = None

@@ -486,6 +486,25 @@
     @apply shrink-0 font-mono text-body tabular-nums text-foreground;
   }
 
+  /*
+   * Stat rows laid out in columns instead of one per full panel width.
+   *
+   * .stat-row pins the label hard left and the value hard right, which reads
+   * fine inside a narrow column but breaks down in a full-width panel: on the
+   * walk-away panel the pair ends up most of a screen apart, and the eye has
+   * to track all the way across to match a value back to its label. The
+   * dotted leader helps but does not fix a gap that wide.
+   *
+   * Columns cap the distance without changing the row pattern itself, so
+   * every existing .stat-row keeps working unchanged. Each column has a max
+   * width, so a wider screen adds another column rather than stretching the
+   * ones already there.
+   */
+  .stat-grid {
+    @apply grid gap-x-8 gap-y-0.5;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 25rem));
+  }
+
   .desk-table {
     @apply w-full border-collapse text-left;
   }

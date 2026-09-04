@@ -877,7 +877,7 @@ export function RouteMap({
             {tip.route.reason && <div className="mt-0.5 text-risk">{tip.route.reason}</div>}
             {tip.fallback && (
               <div className="mt-0.5 text-wait">
-                Straight-line estimate — no real waterway route resolved for this leg.
+                Straight-line estimate, no real waterway route resolved for this leg.
               </div>
             )}
           </div>

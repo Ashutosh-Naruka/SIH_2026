@@ -19,7 +19,7 @@ export const APP_NAME = 'CHARTERING'
 export const APP_NAME_TITLE_CASE = 'Chartering Desk'
 
 /** Browser tab / window title. */
-export const APP_TITLE = 'Chartering Desk — SAIL dry-bulk voyage pricing'
+export const APP_TITLE = 'Chartering Desk: SAIL dry-bulk voyage pricing'
 
 /** One line on what the desk is, for the sign-in card and Help. */
 export const APP_TAGLINE = 'Dry-bulk chartering decision support for SAIL raw materials'

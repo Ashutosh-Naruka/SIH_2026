@@ -123,7 +123,7 @@ def evaluate_rate_crosses(watch: Watch) -> Evaluation | None:
             state=state,
             message=(
                 f"{watch.vessel_class} spot TC average is {side} "
-                f"${threshold:,.0f}/day — {series_id} published "
+                f"${threshold:,.0f}/day, {series_id} published "
                 f"${value:,.0f}/day on {observed_on.isoformat()}."
             ),
             value=value,
@@ -174,7 +174,7 @@ def evaluate_rate_moves(watch: Watch) -> Evaluation | None:
             state=state,
             message=(
                 f"{watch.vessel_class} spot TC average moved {direction} {abs(pct):.1f}% "
-                f"over {watch.window_days} days — ${start_value:,.0f}/day on "
+                f"over {watch.window_days} days, ${start_value:,.0f}/day on "
                 f"{start['date'].isoformat()} to ${end_value:,.0f}/day on "
                 f"{latest['date'].isoformat()}."
             ),

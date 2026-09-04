@@ -154,7 +154,7 @@ def calibrate_port(
     if label is None:
         return PortCalibrationResult(
             port=port, n=0, date_range=None, spearman_r=None, pearson_r=None, mean_abs_diff=None,
-            finding=f"No real PortWatch tonnage label known for {port!r} -- cannot join.",
+            finding=f"No real PortWatch tonnage label known for {port!r}, cannot join.",
         )
 
     portwatch_by_date = _real_portwatch_counts_by_date(label, portwatch_csv_path=portwatch_csv_path)
@@ -174,7 +174,7 @@ def calibrate_port(
             "no real PortWatch daily port-call file found for this label"
             if not portwatch_by_date
             else "zero real AnchorageCensus records exist for this port yet (no Sentinel-1 scene "
-            "has been processed -- see anchorage.detect and 4.1's own PULL_NOTES.md for why)"
+            "has been processed, see anchorage.detect and 4.1's own PULL_NOTES.md for why)"
             if not port_censuses
             else "no census's real acquired_at date matched a real PortWatch date for this port"
         )
@@ -193,7 +193,7 @@ def calibrate_port(
             port=port, n=n, date_range=date_range, spearman_r=None, pearson_r=None,
             mean_abs_diff=mean_abs_diff,
             finding=(
-                f"n={n} real paired observation(s) -- below MIN_N_FOR_CORRELATION "
+                f"n={n} real paired observation(s), below MIN_N_FOR_CORRELATION "
                 f"({MIN_N_FOR_CORRELATION}), so no correlation is reported (see this module's own "
                 "docstring for why a correlation on this few points is not a real finding). Mean "
                 f"absolute difference over these {n} real pair(s): {mean_abs_diff:.2f} vessels."
@@ -256,14 +256,14 @@ def write_calibration_doc(results: list[PortCalibrationResult], *, path: Path = 
             "This is a spot-check comparison between real Sentinel-1-derived vessel counts "
             "(`anchorage.detect`, MODEL_DERIVED) and PortWatch's real daily dry-bulk call counts "
             "(OBSERVED). It is evidence, not a replacement for the live PortWatch-derived congestion "
-            "signal `opt.congestion`/`opt.risk` already use -- Sentinel-1's real revisit cadence "
+            "signal `opt.congestion`/`opt.risk` already use, Sentinel-1's real revisit cadence "
             "(roughly every 4-11 days per port, see `data_builders.harvest_sentinel1`'s own "
             "PULL_NOTES.md) is far too sparse to drive a live quote."
         ),
         "",
         (
             f"A correlation is reported only when a port has at least {MIN_N_FOR_CORRELATION} real "
-            "paired observations (`MIN_N_FOR_CORRELATION`) -- see `anchorage.calibrate`'s own module "
+            "paired observations (`MIN_N_FOR_CORRELATION`), see `anchorage.calibrate`'s own module "
             "docstring for why fewer than that is not a real finding."
         ),
         "",
@@ -285,7 +285,7 @@ def write_calibration_doc(results: list[PortCalibrationResult], *, path: Path = 
         "",
         (
             "A port with `n=0` means no real Sentinel-1 scene has been processed into a real "
-            "`AnchorageCensus` for it yet -- not a failed comparison, an absent one. This module never "
+            "`AnchorageCensus` for it yet, not a failed comparison, an absent one. This module never "
             "reports a correlation below `MIN_N_FOR_CORRELATION` real paired observations, regardless "
             "of how strong or weak the few available points might look."
         ),

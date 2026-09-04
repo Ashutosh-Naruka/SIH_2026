@@ -399,7 +399,7 @@ def _get_credentials() -> tuple[str, str]:
     if not user or not password:
         raise MissingCredentialsError(
             f"{ENV_USER} and {ENV_PASSWORD} must both be set. Register a free account at "
-            f"{REGISTRATION_URL} and export both env vars -- never hardcode or commit them."
+            f"{REGISTRATION_URL} and export both env vars, never hardcode or commit them."
         )
     return user, password
 
@@ -490,7 +490,7 @@ def write_pull_notes(
     asks for. Never overwrites real counts with placeholders."""
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
-        "# Sentinel-1 SAR anchorage-scene spike -- pull notes",
+        "# Sentinel-1 SAR anchorage-scene spike: pull notes",
         "",
         f"**Retrieval date:** {datetime.now(UTC).date().isoformat()}",
         (
@@ -498,14 +498,14 @@ def write_pull_notes(
             f"`{STAC_SEARCH_URL}`, collection `{STAC_COLLECTION}`."
         ),
         "**Product type:** IW_GRDH_1S (Ground Range Detected, High resolution, Interferometric Wide swath).",
-        "**Polarisation:** VV+VH, dual-pol -- observed directly on every real scene found, not assumed.",
+        "**Polarisation:** VV+VH, dual-pol. Observed directly on every real scene found, not assumed.",
         f"**Download:** `{DOWNLOAD_URL_TEMPLATE}` with an OIDC Bearer token from `{TOKEN_URL}`.",
         "",
         "## Credentials",
         "",
         (
             f"Set `{ENV_USER}` and `{ENV_PASSWORD}` (a free account at {REGISTRATION_URL}) before "
-            "calling fetch_scene(). Never hardcoded, never committed -- see MissingCredentialsError."
+            "calling fetch_scene(). Never hardcoded, never committed. See MissingCredentialsError."
         ),
         "",
         "## Real 90-day scene counts per port",
@@ -579,7 +579,7 @@ def main() -> None:
         "every port in this five-port set gets at least one real scene roughly every 1-2 weeks, "
         "so per-port, per-fortnight ground truth is achievable on the real revisit cadence alone. "
         "Download requires a free CDSE account (self-service, no approval workflow, no paid tier "
-        "detected) and was not completed end to end by this automated run -- see the module "
+        "detected) and was not completed end to end by this automated run, see the module "
         "docstring's disclosed limitation."
         if not download_verified
         else "See this module's own docstring: search, auth, and a real download all verified live."

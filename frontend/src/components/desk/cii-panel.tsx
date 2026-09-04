@@ -75,7 +75,7 @@ export function CIIPanel({ emissions }: { emissions: VoyageEmissions | null }) {
         hint="IMO Carbon Intensity Indicator projection for each real vessel on this quote's route: attained vs required CII (gCO2/dwt·nm) and the A-E rating those two numbers imply."
       >
         <div className="flex h-full items-center justify-center text-center text-lead text-muted-foreground">
-          Add a real vessel under "Vessels in hand" to project its IMO carbon rating — the target
+          Add a real vessel under "Vessels in hand" to project its IMO carbon rating. The target
           class above has no real speed or fuel-consumption figures to grade.
         </div>
       </Panel>
@@ -88,7 +88,7 @@ export function CIIPanel({ emissions }: { emissions: VoyageEmissions | null }) {
       id="cii"
       title="Carbon Intensity (CII)"
       soWhat={SO_WHAT}
-      hint="IMO Carbon Intensity Indicator projection for each real vessel: attained vs required CII (gCO2/dwt·nm) and the A–E rating they imply. Ballast fuel to reach the load port is charged against the laden leg — the conservative reading."
+      hint="IMO Carbon Intensity Indicator projection for each real vessel: attained vs required CII (gCO2/dwt·nm) and the A–E rating they imply. Ballast fuel to reach the load port is charged against the laden leg: the conservative reading."
       meta={`${emissions.projections.length} vessel${emissions.projections.length === 1 ? '' : 's'} · ${emissions.rating_year} rating`}
       flush
     >

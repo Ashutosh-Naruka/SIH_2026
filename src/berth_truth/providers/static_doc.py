@@ -34,7 +34,7 @@ class StaticDocProvider:
     def fetch(self, source: PortSource) -> RawCapture:
         if not source.source_url:
             raise ValueError(
-                f"{source.source_name!r} has no source_url yet -- it is a research lead "
+                f"{source.source_name!r} has no source_url yet, it is a research lead "
                 f"(coverage_level={source.coverage_level.value}), not a fetchable source. "
                 f"Its constraint figures (if any are seeded in berth_truth.registry) came "
                 f"from manual reading of the document, not an automated fetch."

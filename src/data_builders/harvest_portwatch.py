@@ -297,7 +297,7 @@ def pull_ports(resolved: list[ResolvedPort], out_dir: Path = RAW_DATA, skip_exis
         if out_path.exists() and skip_existing:
             LOGGER.warning(
                 f"{port.label}: existing file does not match expected portid "
-                f"{port.portid} -- overwriting rather than trusting it"
+                f"{port.portid}, overwriting rather than trusting it"
             )
 
         rows = _pull_paginated(DAILY_PORTS_QUERY, f"portid='{port.portid}'")

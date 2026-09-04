@@ -125,7 +125,7 @@ def parse_declaration_text(
     if title_line is None:
         raise ValueError(
             "no title line found (expected something like 'MAX. SW ARRIVAL DRAFT AT "
-            "<PORT> PORT <BERTHS> BERTH') -- refusing to guess a berth_scope for "
+            "<PORT> PORT <BERTHS> BERTH'), refusing to guess a berth_scope for "
             f"{len(daily_matches)} daily row(s) that were otherwise parsed"
         )
     scope_text = _TITLE_RE.search(title_line).group("scope")  # type: ignore[union-attr]
@@ -195,7 +195,7 @@ def resolve_draft(
             draft_as_of=None,
             warning=(
                 f"no declaration data available for berth {berth_id!r} at {port_id.value} "
-                f"as of {as_of.isoformat()} -- zero matching declarations were supplied"
+                f"as of {as_of.isoformat()}, zero matching declarations were supplied"
             ),
         )
 
@@ -218,6 +218,6 @@ def resolve_draft(
         warning=(
             f"declaration for {berth_id} exists, but the document available "
             f"(internally dated {nearest.doc_internal_date.isoformat()}) does not cover "
-            f"{as_of.isoformat()} -- {gap_days} day(s) apart from that document's own date"
+            f"{as_of.isoformat()}, {gap_days} day(s) apart from that document's own date"
         ),
     )

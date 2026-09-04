@@ -55,7 +55,7 @@ def project_forward(
 ) -> ForwardProjection:
     df = result.frame
     if df.is_empty():
-        raise ValueError("stockflow result is empty -- nothing to project forward")
+        raise ValueError("stockflow result is empty, nothing to project forward")
     as_of = df["date"].max()
 
     rows: list[dict] = []
@@ -149,7 +149,7 @@ def project_tightness_forward(
     ratio has no meaning here (tightness is outflow/stock, both non-negative
     by construction in `build_tightness_index`)."""
     if tightness_index.is_empty():
-        raise ValueError("tightness_index is empty -- nothing to project forward")
+        raise ValueError("tightness_index is empty, nothing to project forward")
     as_of = tightness_index["date"].max()
 
     rows: list[dict] = []

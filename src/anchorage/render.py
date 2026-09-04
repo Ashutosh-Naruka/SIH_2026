@@ -80,7 +80,7 @@ def render_detection_overlay(
         from PIL import Image, ImageDraw, ImageFont
     except ImportError as exc:
         raise OverlayBackendUnavailableError(
-            "Cannot render an overlay: Pillow is not installed. Run `uv add pillow` -- "
+            "Cannot render an overlay: Pillow is not installed. Run `uv add pillow`, "
             "see pyproject.toml's own comment on this dependency."
         ) from exc
 

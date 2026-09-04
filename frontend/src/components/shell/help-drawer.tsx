@@ -84,7 +84,7 @@ export function HelpDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                 <ul className="mt-2 space-y-2">
                   {[
                     ['Voyage Desk', 'The decision: verdict, walk-away line, forecast, route, timeline, cost and exposure.'],
-                    ['Port Twin', 'One port in depth — berth limits, tide rules, and the real waiting-time record.'],
+                    ['Port Twin', 'One port in depth. Berth limits, tide rules, and the real waiting-time record.'],
                     ['Tonnage Field', 'How tight vessel supply is by class and basin, as a relative index.'],
                     ['Fragility', 'How far the inputs can move before the recommendation changes.'],
                     ['Ledger', 'Every recommendation this system has made, scored against what actually happened.'],
@@ -93,8 +93,8 @@ export function HelpDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                     <li key={name} className="flex gap-2">
                       <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-structure" aria-hidden="true" />
                       <span className="text-caption leading-relaxed">
-                        <span className="font-semibold text-foreground">{name}</span>{' '}
-                        <span className="text-muted-foreground">— {what}</span>
+                        <span className="font-semibold text-foreground">{name}:</span>{' '}
+                        <span className="text-muted-foreground">{what}</span>
                       </span>
                     </li>
                   ))}
@@ -107,7 +107,7 @@ export function HelpDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                 </h3>
                 <p className="mt-2 text-caption leading-relaxed text-muted-foreground">
                   Nothing on screen is invented. Where a figure cannot be computed from real data
-                  the desk says so and shows why, instead of substituting a plausible default —
+                  the desk says so and shows why, instead of substituting a plausible default,
                   which is why you will see &ldquo;1/5 components real&rdquo; or &ldquo;insufficient
                   sample (n=0)&rdquo; rather than a tidy total. Every value carries where it came
                   from: <em>measured</em> is read off a real source, <em>modelled</em> is the output

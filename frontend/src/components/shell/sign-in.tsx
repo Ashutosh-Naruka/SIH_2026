@@ -92,8 +92,8 @@ export function SignIn() {
 
         {firstRun && (
           <p className="panel-note">
-            This deployment has no accounts yet. The account you create now is the administrator —
-            it can create everyone else. There is no default password anywhere in this system, by
+            This deployment has no accounts yet. The account you create now is the administrator.
+            It can create everyone else. There is no default password anywhere in this system, by
             design.
           </p>
         )}
@@ -123,7 +123,7 @@ export function SignIn() {
           label="Password"
           hint={
             firstRun
-              ? 'At least 12 characters. Length is the only rule — NIST advises against composition requirements, which push people toward predictable substitutions.'
+              ? 'At least 12 characters. Length is the only rule. NIST advises against composition requirements, which push people toward predictable substitutions.'
               : undefined
           }
         >

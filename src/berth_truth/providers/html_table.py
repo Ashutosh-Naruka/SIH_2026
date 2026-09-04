@@ -45,7 +45,7 @@ def _port_id_for(port: PortEnum) -> PortId:
     if mapped is None:
         raise ValueError(
             f"{port!r} has no berth_truth.models.PortId mapping "
-            f"(opt.voyage._REGISTER_PORT_ID) -- the html_table adapter only knows "
+            f"(opt.voyage._REGISTER_PORT_ID), the html_table adapter only knows "
             f"how to label a ScheduleSnapshot for ports berth_truth itself tracks."
         )
     return mapped

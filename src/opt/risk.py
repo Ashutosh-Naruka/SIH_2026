@@ -213,7 +213,7 @@ def port_congestion_alert(port_label: str, as_of: date | None = None) -> RiskAle
         severity=severity,
         message=(
             f"{port_label} dry-bulk port calls at {last:.0f}/day, "
-            f"z={z:+.1f} vs its own {CONGESTION_WINDOW_DAYS}-day baseline — possible queue building"
+            f"z={z:+.1f} vs its own {CONGESTION_WINDOW_DAYS}-day baseline, possible queue building"
         ),
         metric_value=z,
         threshold=CONGESTION_Z_THRESHOLD,
@@ -257,7 +257,7 @@ def chokepoint_disruption_alert(chokepoint_id: str, as_of: date | None = None) -
         severity=severity,
         message=(
             f"{name} dry-bulk transits fell to {last:.0f}/day, "
-            f"z={z:+.1f} vs its own {CHOKEPOINT_WINDOW_DAYS}-day baseline — possible disruption"
+            f"z={z:+.1f} vs its own {CHOKEPOINT_WINDOW_DAYS}-day baseline, possible disruption"
         ),
         metric_value=z,
         threshold=-CHOKEPOINT_Z_THRESHOLD,
@@ -316,7 +316,7 @@ def cyclone_season_alert(
     path = climatology_path or CYCLONE_CLIMATOLOGY_PATH
     if not path.exists():
         LOGGER.warning(
-            f"{path} not found -- run `python -m data_builders.build_cyclone_climatology` "
+            f"{path} not found, run `python -m data_builders.build_cyclone_climatology` "
             "(after harvest_ibtracs); cyclone risk check skipped for this quote."
         )
         return None
@@ -366,7 +366,7 @@ def cyclone_season_alert(
         severity=severity,
         message=(
             f"{basin_label} cyclone climatology: {max_rate:.3f} storms/season-week in ISO week "
-            f"{week_label} — {max_rate / threshold:.1f}× the {threshold:.3f}/week threshold. "
+            f"{week_label}, {max_rate / threshold:.1f}× the {threshold:.3f}/week threshold. "
             "Historical strike rate, not a live storm-track forecast."
         ),
         metric_value=max_rate,

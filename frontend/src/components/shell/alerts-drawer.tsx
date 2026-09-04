@@ -159,7 +159,7 @@ export function AlertsDrawer({ open, onClose }: { open: boolean; onClose: () => 
 
               {/* The one promise this panel must never make. */}
               <p className="panel-note">
-                Alerts are recorded and shown here. Nothing is sent — no email, no message, no push.
+                Alerts are recorded and shown here. Nothing is sent: no email, no message, no push.
                 {data?.evaluation_interval_seconds
                   ? ` Watches are checked about every ${Math.round(data.evaluation_interval_seconds / 60)} minutes, and again the moment a new day's rates arrive.`
                   : ' Evaluation is driven externally on this deployment.'}
@@ -184,7 +184,7 @@ export function AlertsDrawer({ open, onClose }: { open: boolean; onClose: () => 
                   <div className="panel-state">
                     <p className="panel-state-title">Nothing has fired</p>
                     <p className="panel-state-hint">
-                      An empty list is the normal, healthy result — it means every watched condition is
+                      An empty list is the normal, healthy result. It means every watched condition is
                       where it was last time.
                     </p>
                   </div>
@@ -400,7 +400,7 @@ export function AlertsDrawer({ open, onClose }: { open: boolean; onClose: () => 
                     </Button>
                     <p className="text-micro leading-relaxed text-muted-foreground">
                       A watch fires on the change into its condition, not on every check while it
-                      holds — a rate that sits below a level for a fortnight is one piece of news, not
+                      holds. A rate that sits below a level for a fortnight is one piece of news, not
                       fourteen.
                     </p>
                   </div>

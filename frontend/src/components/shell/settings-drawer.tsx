@@ -128,13 +128,13 @@ export function SettingsDrawer({
                   {fx.inrPerUsd != null ? (
                     <>
                       Rate <span className="desk-num text-foreground">₹{fx.inrPerUsd}</span> per USD
-                      {fx.asOf ? ` — real FRED DEXINUS observation of ${fx.asOf}.` : '.'} Rupee
+                      {fx.asOf ? `, real FRED DEXINUS observation of ${fx.asOf}.` : '.'} Rupee
                       figures use Indian digit grouping and lakh/crore.
                     </>
                   ) : (
                     <>
-                      No real USD/INR observation is available, so rupee display is unavailable —
-                      the desk will not invent a rate to satisfy a preference.
+                      No real USD/INR observation is available, so rupee display is unavailable.
+                      The desk will not invent a rate to satisfy a preference.
                     </>
                   )}
                 </p>

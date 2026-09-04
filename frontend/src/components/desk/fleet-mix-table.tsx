@@ -26,20 +26,20 @@ function Row({
         {formatNumber(c.total_capacity_dwt)}
       </td>
       <td className="desk-num text-right">
-        {rejected ? '—' : c.voyage_days_per_vessel.toFixed(1)}
+        {rejected ? 'n/a' : c.voyage_days_per_vessel.toFixed(1)}
       </td>
       <td className="desk-num text-right font-semibold">
-        {rejected ? '—' : moneyCompact(c.cost_p50_usd)}
+        {rejected ? 'n/a' : moneyCompact(c.cost_p50_usd)}
       </td>
       <td className="desk-num text-right">
-        {rejected || usdPerMt == null ? '—' : `$${usdPerMt.toFixed(2)}`}
+        {rejected || usdPerMt == null ? 'n/a' : `$${usdPerMt.toFixed(2)}`}
       </td>
       <td className="desk-num text-right text-caption text-muted-foreground">
-        {rejected ? '—' : `${moneyCompact(c.cost_p10_usd)}–${moneyCompact(c.cost_p90_usd)}`}
+        {rejected ? 'n/a' : `${moneyCompact(c.cost_p10_usd)}–${moneyCompact(c.cost_p90_usd)}`}
       </td>
       <td className="text-center">
         {rejected ? (
-          <span className="text-muted-foreground">—</span>
+          <span className="text-muted-foreground">n/a</span>
         ) : (
           <Grade letter={scoreToGrade(c.reliability_score)} />
         )}
@@ -90,7 +90,7 @@ export function FleetMixTable({
             <th className="text-right">Voy d</th>
             <th className="text-right">Cost p50</th>
             <th className="text-right">
-              <Tooltip content="This configuration's own cost p50 ÷ cargo tonnes — the chosen fleet mix, not Rate Forecast's open-market quote or Landed Cost's freight component." className="cursor-help">
+              <Tooltip content="This configuration's own cost p50 ÷ cargo tonnes: the chosen fleet mix, not Rate Forecast's open-market quote or Landed Cost's freight component." className="cursor-help">
                 <span className="border-b border-dotted border-muted-foreground/50">
                   $/mt
                 </span>

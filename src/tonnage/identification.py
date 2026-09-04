@@ -122,17 +122,17 @@ def survey_available_tonnage_evidence() -> AvailableTonnageEvidenceSurvey:
             source="PortWatch daily port calls",
             path="raw_data/portwatch/*_daily_portcalls.csv",
             what_it_provides=(
-                "Per-port, per-day COUNT (portcalls_dry_bulk -- real AIS-derived, "
+                "Per-port, per-day COUNT (portcalls_dry_bulk, real AIS-derived, "
                 "provenance OBSERVED) and TONNAGE (import_dry_bulk/export_dry_bulk "
                 "-- PortWatch's own model estimate from AIS draft changes, "
-                "provenance ESTIMATED, not a customs/weighbridge measurement -- "
+                "provenance ESTIMATED, not a customs/weighbridge measurement, "
                 "see data_builders.provenance) of dry-bulk calls. A flow at the "
                 "port boundary either way, not a vessel-level state."
             ),
             supports_total_available_split=False,
             reason=(
                 "A completed call tells you a vessel WAS at a port on a given day. "
-                "It says nothing about what that vessel does next -- refix "
+                "It says nothing about what that vessel does next, refix "
                 "immediately (unavailable) or ballast and wait (available). "
                 "tonnage.stockflow already treats this correctly: it reconstructs "
                 "a flow-conservation trajectory, never a per-vessel state."
@@ -143,7 +143,7 @@ def survey_available_tonnage_evidence() -> AvailableTonnageEvidenceSurvey:
             path="raw_data/berth_truth/fact_port_call.jsonl",
             what_it_provides=(
                 "One row per vessel call at Paradip, with observed LOA/beam/draft "
-                "and (usually) a vessel name -- but no IMO in any currently "
+                "and (usually) a vessel name, but no IMO in any currently "
                 "ingested source, no position history, no idle/ballast flag."
             ),
             supports_total_available_split=False,
@@ -151,7 +151,7 @@ def survey_available_tonnage_evidence() -> AvailableTonnageEvidenceSurvey:
                 "Same limitation as PortWatch, at higher per-call fidelity: an "
                 "arrival record, not a between-calls trajectory. Without an IMO "
                 "join to an external vessel-position/fixture feed (none exists in "
-                "this repo -- see the closing entry below), there is no way to "
+                "this repo, see the closing entry below), there is no way to "
                 "know whether the vessel now sits open or has already re-fixed."
             ),
         ),
@@ -160,7 +160,7 @@ def survey_available_tonnage_evidence() -> AvailableTonnageEvidenceSurvey:
             path="raw_data/signal_weekly/",
             what_it_provides=(
                 "12 real, hand-transcribed (basin, class, date) ballaster COUNTS "
-                "from 3 of 15 real Signal weekly issues -- see "
+                "from 3 of 15 real Signal weekly issues, see "
                 "tonnage.validate.KNOWN_SIGNAL_BALLASTER_SNAPSHOTS."
             ),
             supports_total_available_split=False,
@@ -172,7 +172,7 @@ def survey_available_tonnage_evidence() -> AvailableTonnageEvidenceSurvey:
                 "this); it cannot itself BE the daily reconstruction input, and "
                 "fitting a correction factor to make the reconstruction hit these "
                 "same 12 points would be tuning a parameter on its own validation "
-                "set -- the exact mistake tonnage.validate's own docstring "
+                "set, the exact mistake tonnage.validate's own docstring "
                 "already refuses to make."
             ),
         ),
@@ -180,7 +180,7 @@ def survey_available_tonnage_evidence() -> AvailableTonnageEvidenceSurvey:
             source="AIS position/speed feed, charter-fixture status feed, or any "
             "other per-vessel state source",
             path="(does not exist anywhere in raw_data/)",
-            what_it_provides="N/A -- not present in this repository.",
+            what_it_provides="N/A: not present in this repository.",
             supports_total_available_split=False,
             reason=(
                 "This is the one kind of evidence that WOULD support the split "
@@ -189,7 +189,7 @@ def survey_available_tonnage_evidence() -> AvailableTonnageEvidenceSurvey:
                 "distinguishing open from committed). Checked directly: "
                 "raw_data/ contains baltic_routes.csv, berth_truth/, "
                 "handybulk_*.csv, investing_com/, pilot_index_levels.csv, "
-                "portwatch/, signal_weekly/, sources.md -- none of these is a "
+                "portwatch/, signal_weekly/, sources.md. None of these is a "
                 "per-vessel feed. Commercial products (Signal Ocean, Clarksons) "
                 "sell exactly this and it is out of scope to acquire for this "
                 "project (see the licensing/data-source discipline elsewhere in "
@@ -243,7 +243,7 @@ def evaluate_identification_gate(result: StockflowResult) -> IdentificationGateR
         reasoning = (
             "RELATIVE. Two independent checks both fail the bar for ABSOLUTE: "
             "(1) no evidence source on disk distinguishes an available/ballasting "
-            "vessel from a committed one (see evidence_survey -- port-call "
+            "vessel from a committed one (see evidence_survey, port-call "
             "records are a flow at the port boundary, not a vessel-level state); "
             f"(2) the reconstruction's implied ballaster count runs "
             f"{signal_summary.min_ratio:.2f}x to {signal_summary.max_ratio:.2f}x "
@@ -251,7 +251,7 @@ def evaluate_identification_gate(result: StockflowResult) -> IdentificationGateR
             "real comparison points, with no single correction factor that fixes "
             "all of them (tonnage.validate.SignalValidationSummary). Per the P3 "
             "instruction, no calibration factor is fitted to force a fit against "
-            "those 12 points -- that would be tuning on the validation set. "
+            "those 12 points, that would be tuning on the validation set. "
             "stock_dwt and everything downstream (tightness, forward projection) "
             "ships as a Physical Supply Pressure Index / Tonnage Tightness Index: "
             "a relative, within-(basin, class)-over-time signal, with no "
@@ -300,7 +300,7 @@ def evaluate_iv_verdict() -> IVVerdict:
         status=MethodStatus.NOT_ATTEMPTED,
         candidate_instruments_considered=(
             (
-                "weather/chokepoint-driven supply shocks -- docs/plan.md's original "
+                "weather/chokepoint-driven supply shocks, docs/plan.md's original "
                 "proposed instrument"
             ),
         ),
@@ -309,8 +309,8 @@ def evaluate_iv_verdict() -> IVVerdict:
             "Weather/chokepoint disruption in the data actually on disk "
             "(PortWatch daily call counts, the only flow series available) "
             "plausibly affects port throughput, vessel positioning, and route "
-            "choice simultaneously with rates -- the same channels the rate "
-            "itself moves through -- so exclusion cannot be argued from evidence "
+            "choice simultaneously with rates, the same channels the rate "
+            "itself moves through, so exclusion cannot be argued from evidence "
             "in this repository, only asserted. tonnage.supplycurve's own module "
             "docstring already reaches this conclusion "
             "('What this module does not attempt'). The IV claim is removed from "
@@ -340,12 +340,12 @@ def evaluate_kalman_verdict() -> KalmanVerdict:
             "implemented. tonnage.stockflow.reconstruct ships the honest "
             "alternative instead: a flow-conservation accumulator, periodically "
             "anchored to the real UNCTAD world-fleet total and distributed "
-            "across basins by real observed activity share -- stockflow.py's own "
+            "across basins by real observed activity share, stockflow.py's own "
             "module docstring already names this choice explicitly ('the honest "
             "version of that idea... rather than dressing up a plain accumulator "
             "with Kalman-filter vocabulary it doesn't earn'). No Kalman-vs-"
             "no-Kalman comparison is reported because no Kalman variant exists "
-            "to compare against -- there is no per-day observation on disk to "
+            "to compare against, there is no per-day observation on disk to "
             "build one from."
         ),
     )
@@ -403,14 +403,14 @@ def _explain(cls: VesselClass, fit: SupplyCurveFit, fd: FirstDifferenceCheck, rs
             f"the relationship's SIGN itself differs between the first half "
             f"(r={rs.first_half_r:.3f}, n={rs.first_half_n}) and second half "
             f"(r={rs.second_half_r:.3f}, n={rs.second_half_n}, split at "
-            f"{rs.split_date}) of the sample -- pooling two regimes with "
+            f"{rs.split_date}) of the sample, pooling two regimes with "
             "opposite signs can produce a pooled correlation with either sign, "
             "unrelated to the true within-regime relationship"
         )
     elif abs(rs.first_half_r - rs.second_half_r) > 0.2:
         clauses.append(
             f"correlation strength is unstable across the sample (first half "
-            f"r={rs.first_half_r:.3f}, second half r={rs.second_half_r:.3f}) -- "
+            f"r={rs.first_half_r:.3f}, second half r={rs.second_half_r:.3f}), "
             "regime instability, even without a sign flip"
         )
 
@@ -435,7 +435,7 @@ def _explain(cls: VesselClass, fit: SupplyCurveFit, fd: FirstDifferenceCheck, rs
             f"{cls.value}: level r={fit.pearson_r:.3f} (n={fit.n_obs}). None of the "
             "tested candidate explanations (trend confounding, regime "
             "instability, basin aggregation, target transform) materially "
-            "changes the picture -- the level correlation appears to be a "
+            "changes the picture, the level correlation appears to be a "
             "reasonably direct read of the real (tightness, rate) relationship "
             "in this sample, weak or wrong-signed as measured. No IV exists to "
             "test whether it is causal (see evaluate_iv_verdict); this remains "
@@ -446,7 +446,7 @@ def _explain(cls: VesselClass, fit: SupplyCurveFit, fd: FirstDifferenceCheck, rs
         f"{cls.value}: level r={fit.pearson_r:.3f} (n={fit.n_obs}) is "
         f"{'wrong-signed' if wrong_signed else 'correctly signed but ' + ('weak' if fit.weak_signal else 'not weak')}. "
     )
-    return prefix + "Real evidence found for: " + "; ".join(clauses) + ". Not causal in any case -- see evaluate_iv_verdict (no IV attempted, no defensible instrument)."
+    return prefix + "Real evidence found for: " + "; ".join(clauses) + ". Not causal in any case, see evaluate_iv_verdict (no IV attempted, no defensible instrument)."
 
 
 def diagnose_sign(vessel_class: VesselClass, fit: SupplyCurveFit, tightness_index: pl.DataFrame,

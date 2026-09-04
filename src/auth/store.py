@@ -203,7 +203,7 @@ class AuthStore:
         if len(password) < MIN_PASSWORD_LENGTH:
             raise WeakPasswordError(
                 f"A password must be at least {MIN_PASSWORD_LENGTH} characters. "
-                f"Length is the only rule -- NIST SP 800-63B advises against "
+                f"Length is the only rule, NIST SP 800-63B advises against "
                 f"composition requirements, which push people toward predictable "
                 f"substitutions."
             )

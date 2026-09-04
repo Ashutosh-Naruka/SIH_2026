@@ -64,7 +64,7 @@ def _explain_lock_wait(
                 f"forecast, +/-{basis.basis_std:.0%} extra spread."
             )
     else:
-        factors.append("No route-specific basis calibration exists for this origin — priced at the class-wide rate.")
+        factors.append("No route-specific basis calibration exists for this origin, priced at the class-wide rate.")
 
     if stopping_result is not None:
         factors.append(
@@ -96,7 +96,7 @@ def _explain_lock_wait(
             factors.append(
                 f"weather_delay: {transit_buffer.explanation} Spread over the {lw_result.contract_term_days}-day "
                 f"contract that is ${weather_cost_usd_per_day:,.0f}/day, raising today's "
-                f"${boundary_today:,.0f}/day threshold to ${lw_result.ceiling_usd_per_day:,.0f}/day — a "
+                f"${boundary_today:,.0f}/day threshold to ${lw_result.ceiling_usd_per_day:,.0f}/day, a "
                 f"one-directional tax on waiting that can only favor LOCK, never push it back to WAIT."
             )
         method = "LSMC optimal-stopping simulation (Longstaff-Schwartz), fused with the horizon-blended forecast."
@@ -108,7 +108,7 @@ def _explain_lock_wait(
 
     comparison = "at or below" if lw_result.action == "LOCK" else "above"
     summary = (
-        f"{lw_result.action}: {route} ({lw_result.cargo_volume_dwt:,.0f} dwt {lw_result.vessel_class.value}) — "
+        f"{lw_result.action}: {route} ({lw_result.cargo_volume_dwt:,.0f} dwt {lw_result.vessel_class.value}), "
         f"today's ${lw_result.today_quote_usd_per_day:,.0f}/day is {comparison} the "
         f"${lw_result.ceiling_usd_per_day:,.0f}/day threshold."
     )
@@ -141,14 +141,14 @@ def _explain_repositioning(a: RepositioningAction) -> Explanation:
     )
     if a.is_staying:
         summary = (
-            f"Vessel {a.vessel_id}: stay at {a.current_port.value.id} — the best expected outcome among the "
+            f"Vessel {a.vessel_id}: stay at {a.current_port.value.id}, the best expected outcome among the "
             f"ports checked."
         )
     else:
         improvement = a.recommended_score_usd - a.current_port_score_usd
         summary = (
             f"Vessel {a.vessel_id}: reposition from {a.current_port.value.id} to "
-            f"{a.recommended_port.value.id} — an estimated ${improvement:,.0f} better expected outcome."
+            f"{a.recommended_port.value.id}, an estimated ${improvement:,.0f} better expected outcome."
         )
     factors = [
         (
@@ -210,7 +210,7 @@ def _explain_fleet_mix(frontier: FleetMixFrontier) -> Explanation:
             f"reliability {alt.reliability_score:.2f}."
         )
     for rej in frontier.rejected_configurations:
-        factors.append(f"{rej.vessel_class.value}: ruled out — {rej.infeasible_reason}")
+        factors.append(f"{rej.vessel_class.value}: ruled out, {rej.infeasible_reason}")
 
     summary = (
         f"{best.vessel_class.value} recommended for {frontier.requirement_dwt:,.0f} dwt "

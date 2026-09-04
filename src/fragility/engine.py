@@ -105,7 +105,7 @@ _MAX_EVALUATIONS_TIER3: Final[int] = 10
 # PortCheck (surfaced below as context chips), not a decision input yet --
 # so there is no honest injection point for this variable to search.
 _WAIT_DAYS_UNAVAILABLE_REASON: Final[str] = (
-    "Wait-time sensitivity can't be tested yet -- nothing in the pricing or "
+    "Wait-time sensitivity can't be tested yet, nothing in the pricing or "
     "scheduling logic currently takes a wait-day figure as an input, so "
     "there's no lever here to search for a flip point. The real wait data "
     "shown as context below informs the picture, but doesn't change the "
@@ -403,7 +403,7 @@ def analyze_fragility(
                     flip_found=False,
                     unavailable_reason=(
                         f"draft at the binding port ({binding_port.value.id}) is "
-                        f"{binding_verdict.draft_status.value if binding_verdict.draft_status else 'unresolved'} -- "
+                        f"{binding_verdict.draft_status.value if binding_verdict.draft_status else 'unresolved'}, "
                         "no defined limit to search a boundary against."
                     ),
                     berth_truth_context=binding_context,
@@ -439,7 +439,7 @@ def analyze_fragility(
                     flip_found=False,
                     unavailable_reason=(
                         f"draft at the binding port ({binding_port.value.id}) is "
-                        f"{binding_verdict.draft_status.value if binding_verdict.draft_status else 'unresolved'} -- "
+                        f"{binding_verdict.draft_status.value if binding_verdict.draft_status else 'unresolved'}, "
                         "no defined limit to perturb."
                     ),
                     berth_truth_context=binding_context,

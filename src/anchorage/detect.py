@@ -282,7 +282,7 @@ def _parse_geolocation_grid(annotation_xml: bytes) -> list[tuple[int, int, float
         lon = float(gp.findtext("longitude"))
         points.append((line, pixel, lat, lon))
     if not points:
-        raise ValueError("No geolocationGridPoint entries found -- not a real Sentinel-1 annotation XML.")
+        raise ValueError("No geolocationGridPoint entries found, not a real Sentinel-1 annotation XML.")
     return points
 
 
@@ -394,7 +394,7 @@ def load_scene(path: Path, bbox: tuple[float, float, float, float], *, polarisat
     except ImportError as exc:
         raise GeoTIFFBackendUnavailableError(
             f"Cannot read {path}: rasterio is not installed. Run `uv add rasterio` and confirm "
-            "before relying on this function -- see anchorage.detect's own module docstring."
+            "before relying on this function, see anchorage.detect's own module docstring."
         ) from exc
 
     tiff_uri, xml_bytes = _resolve_band(path, polarisation)
@@ -412,7 +412,7 @@ def load_scene(path: Path, bbox: tuple[float, float, float, float], *, polarisat
         row_end = min(src.height, int(max(rows)) + 1)
         col_end = min(src.width, int(max(cols)) + 1)
         if row_end <= row_off or col_end <= col_off:
-            raise ValueError(f"Fitted pixel window for {bbox} is empty/out of range against {path} -- bbox likely does not fall inside this scene.")
+            raise ValueError(f"Fitted pixel window for {bbox} is empty/out of range against {path}, bbox likely does not fall inside this scene.")
         window = Window(col_off=col_off, row_off=row_off, width=col_end - col_off, height=row_end - row_off)
         array = src.read(1, window=window)
 
@@ -436,7 +436,7 @@ def _resolve_band(path: Path, polarisation: str) -> tuple[str, bytes]:
             ann = [n for n in names if fnmatch.fnmatch(n, _ANNOTATION_GLOB.format(pol=pol)) and "/calibration/" not in n and "/rfi/" not in n]
             if not meas or not ann:
                 raise GeoTIFFBackendUnavailableError(
-                    f"No {pol!r}-polarisation measurement/annotation pair found inside {path} -- "
+                    f"No {pol!r}-polarisation measurement/annotation pair found inside {path}, "
                     f"real entries: {names[:5]}..."
                 )
             xml_bytes = z.read(ann[0])
@@ -449,7 +449,7 @@ def _resolve_band(path: Path, polarisation: str) -> tuple[str, bytes]:
             raise GeoTIFFBackendUnavailableError(f"No {pol!r}-polarisation measurement/annotation pair found under {path}.")
         return str(meas_matches[0]), ann_matches[0].read_bytes()
 
-    raise GeoTIFFBackendUnavailableError(f"{path} is neither a .zip nor a directory -- cannot locate a measurement band.")
+    raise GeoTIFFBackendUnavailableError(f"{path} is neither a .zip nor a directory, cannot locate a measurement band.")
 
 
 def cfar_detect(
@@ -752,7 +752,7 @@ def count_vessels(
         if scene_metadata is None:
             raise ValueError(
                 "count_vessels needs either a pre-loaded `image` or `scene_metadata` "
-                "(to know the real footprint bbox to load) -- neither was supplied."
+                "(to know the real footprint bbox to load), neither was supplied."
             )
         image, _measured_spacing = load_scene(scene_path, scene_metadata.footprint_bbox)
     if scene_metadata is None:

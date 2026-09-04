@@ -245,7 +245,7 @@ def record_outcome(
         raise ValueError(f"realized_rate_usd_per_day must be positive, got {realized_rate_usd_per_day}.")
     known_ids = {e.entry_id for e in read_entries()}
     if entry_id not in known_ids:
-        raise KeyError(f"No ledger entry with entry_id={entry_id!r} -- cannot link an outcome to it.")
+        raise KeyError(f"No ledger entry with entry_id={entry_id!r}, cannot link an outcome to it.")
 
     outcome = OutcomeRecord(
         outcome_id=str(uuid.uuid4()), entry_id=entry_id, recorded_at=recorded_at or datetime.now(UTC),
@@ -272,7 +272,7 @@ def update_entry(entry_id: str, **_changes: object) -> None:
     raise MutationNotAllowedError(
         f"Ledger entries are append-only and can never be updated (attempted on entry_id={entry_id!r}). "
         "A corrected recommendation is a new entry; a realised outcome is a new, separately linked "
-        "OutcomeRecord via record_outcome() -- never an edit to the original entry."
+        "OutcomeRecord via record_outcome(), never an edit to the original entry."
     )
 
 

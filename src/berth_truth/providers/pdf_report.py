@@ -350,7 +350,7 @@ class PdfReportProvider:
     def fetch(self, source: PortSource) -> RawCapture:
         if not source.source_url or "{" in source.source_url:
             raise ValueError(
-                f"{source.source_name!r} has no concrete, resolved source_url yet -- "
+                f"{source.source_name!r} has no concrete, resolved source_url yet, "
                 f"the registry entry is a URL pattern or research lead, not a fetchable one."
             )
         fetched_at = datetime.now(UTC)

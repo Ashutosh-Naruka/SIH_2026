@@ -120,7 +120,7 @@ def run_optimizer(
     """
     if not inputs.parcels:
         raise ValueError(
-            "run_optimizer requires at least one cargo parcel -- the lock/wait "
+            "run_optimizer requires at least one cargo parcel, the lock/wait "
             "decision is priced from the parcel's tonnage and origin/destination, "
             "not a directly-specified vessel class."
         )

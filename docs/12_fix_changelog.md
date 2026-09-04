@@ -4618,3 +4618,104 @@ measured, only that this particular renderer shouldn't call it out.
 none in a touched file). No backend files changed this round, so no `pytest`/`ruff` re-run needed.
 Re-screenshotted the same focused Supramax view as rounds 3-4: the line into Paradip is now a single
 continuous solid stroke with no dash-pattern break anywhere along it. Both dev servers left running.
+
+## 2026-09-04 (later still) — UX round 6: stat-row readability, worked-example vessels, and removing every prose dash
+
+Three unrelated requests in one pass, from screenshots of the running desk.
+
+### 1. Walk-Away Line stat rows were unreadable at full-panel width
+
+Reported as "the label is all the way to the left, and the value is all the way to the right, your
+eyes have to do a lot of work". Correct, and it is specific to this panel: `.stat-row` pins the
+label left and the value right, which is fine inside a narrow column but breaks down in
+`WalkAwayCurve`, which is deliberately full-width (see the layout comment in `voyage-desk-page.tsx`).
+At desk width the pair ends up most of a screen apart. The existing dotted leader helps a gap of a
+few hundred pixels; it does not help one of fourteen hundred.
+
+Kept the row pattern, capped the distance. New `.stat-grid` component class in `index.css` lays
+`.stat-row` children out in `repeat(auto-fit, minmax(min(100%, 17rem), 25rem))` columns, so each
+label/value pair is bounded at 25rem and a wider screen adds a column instead of stretching the
+existing ones. Applied to the walk-away footer's three rows only. Every other `.stat-row` on the
+desk (`verdict-block`, `portfolio-page`, `stat.tsx`) is untouched and unchanged.
+
+### 2. "Load worked example" left the vessel-dependent panels empty, and did not look clicked
+
+Two faults in one button. The example filled seven cargo fields and no vessels, so CII, backhaul,
+laytime and the fleet panels all rendered their "add a vessel" empty state. Someone whose first
+click is this button lands on a desk that looks half-built. And the button itself gave no feedback:
+it fills fields further down the form than the button, so on a short viewport nothing visibly
+happens.
+
+`lib/worked-example.ts` gains `EXAMPLE_VESSELS` and `exampleVessels(anchorIso)`: two ships, a
+Panamax already at Newcastle (0 nm ballast) and a Supramax at Singapore (4,138 nm ballast), so the
+two do not score identically and the comparison has something to compare. `fillWithExample()` now
+replaces (not appends) the vessel list, opens the collapsed "Vessels in hand" section so the reader
+can see they arrived, and flips the button into a confirmed state ("Example loaded, 2 vessels",
+go-toned) for 2.5s, with an `aria-live` region so the confirmation is not purely visual.
+
+**Provenance**: these vessel particulars are DECLARED inputs, not observations, and the module
+docstring says so at length. They are class-typical figures of exactly the same character as the
+defaults `newVesselDraft()` already writes into the form on "+ Add vessel". The ids `SAIL_1`/`SAIL_2`
+are deliberately placeholders rather than a real hull's name or IMO number, because attaching a real
+ship's identity to particulars nobody read off a register is the kind of invention this repo
+refuses. Everything computed from them (CII rating, laytime, landed cost) is MODEL_DERIVED and only
+as real as the declared inputs.
+
+### 3. Every prose em dash and double dash removed from user-visible text
+
+Reported as "replacing em dashes with double -- dashes isn't going to cut it, REMOVE ALL". The
+mechanism behind the em dashes in the screenshots was `lib/humanize.ts`'s `cleanDashes()`, which
+converted backend " -- " into a real em dash on the way to the screen. That ran the wrong way and is
+now inverted: it folds both forms into ordinary punctuation (a matched pair becomes a parenthesis, a
+single dash becomes a comma, or a full stop before a capital where a comma would splice).
+
+`cleanDashes` is only a display-layer safety net and only one panel calls it, so the source strings
+were fixed too: 139 lines of frontend string/JSX text, 168 Python string literals across 47 files,
+27 FastAPI route docstrings and 4 Pydantic schema docstrings in `backend/main.py` (both of those
+publish into `/openapi.json` and render in the Swagger UI at `/docs`, so they are user-visible text,
+unlike ordinary docstrings). Roughly 75 sites where a mechanical comma read badly were then
+hand-corrected to a colon or a full stop.
+
+Standalone `'—'` used as a table's no-value glyph (34 sites) became `'n/a'`. That is a different use
+from prose punctuation, but it is still the character, and "n/a" is if anything clearer in a numeric
+column.
+
+**Scope, stated because it is deliberate and incomplete**: ordinary code comments and the docstrings
+under `src/` still contain " -- ". Those are this repo's documentation, the house convention
+CLAUDE.md mandates, and nothing renders them to a user. A mechanical rewrite of ~1,700 of them
+would be churn with a real chance of mangling prose, and an early attempt at exactly that produced
+`"//, cheap and cacheable"` before being scoped back out. If those are wanted too, it is a separate,
+reviewable pass.
+
+**Things deliberately not touched**: CSS custom properties (`var(--go)`, 2,655 `--` occurrences in
+`frontend/src` are overwhelmingly these), CLI flags inside strings (`--reload`), regex literals
+(`lib/humanize.ts`'s own patterns, which must keep matching the characters they strip), en dashes
+used as range separators (`A–E`, `$10–$20`), and `berth_truth/declarations.py`'s `_HYPHEN_LIKE`
+character class, which is parser input rather than prose.
+
+**One bug introduced and fixed mid-pass, recorded because it reached disk**: the first rewrite
+dropped the trailing space when a dash ended an f-string fragment, producing
+`"...(2026-09-24),priced from climatology only"`. The repair script written for it was worse: it
+derived a `(',', ', ')` replacement pair from a one-character fragment and applied it as a global
+search-and-replace, expanding every comma in 206 files. Restored the whole of `src/`, `backend/`
+and `frontend/src` from a pre-change backup (taken before the dash work, so items 1 and 2 above
+survived), fixed the trailing-space rule, and re-ran the pipeline from clean. Verified afterwards by
+diffing every changed line against that backup: in `src/` and `backend/` every single changed line
+had a dash in its original, and in `frontend/src` the only dash-free changes are the six intended
+hand-edits. Zero collateral.
+
+**Verified**: `tsc -b --noEmit`, `npm run build`, `npm run lint` (warnings unchanged, none in a
+touched file), `ruff check src backend` and `compileall` all clean. Live end-to-end against both
+servers: the worked example with its two vessels returns `status=feasible`, 0 blockers, `WAIT`, and
+a CII panel with 2 graded rows (Panamax D, Supramax E) where it previously showed its empty state.
+Swept `/openapi.json`, `/ports`, `/chokepoints`, `/ledger/live`, `/tonnage-field`, `/alerts`, `/fx`,
+`/anchorage/calibration` and a full `/quote`: 0 em dashes and 0 prose ` -- ` across all of them. The
+built bundle's only 5 remaining em dashes are inside `cleanDashes`'s own strip-regexes, which never
+render. Both dev servers left running.
+
+**Pre-existing failure, not caused by this round and not fixed here**:
+`tests/test_no_synthetic_frontend_data.py` fails on `route-map.tsx:419: const w = Math.sin(Math.PI * t)`.
+That is a legitimate geometric interpolation, not synthetic data, caught by the `Math\.sin\(` pattern.
+Confirmed identical before and after this round by running the tripwire's own patterns against the
+pre-change backup: 1 offender in both. Left alone because the allowlist is deliberately empty and
+this round has nothing to do with it.

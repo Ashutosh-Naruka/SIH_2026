@@ -227,7 +227,7 @@ PORT_PROFILES: dict[PortEnum, PortProfile] = {
         role=PortRole.LOAD, network_tier=NetworkTier.CORE_PS,
         operational_model=OperationalModel.ANCHORAGE_TRANSFER,
         notes=(
-            "Coal transshipment anchorage in the Mahakam delta, East Kalimantan -- "
+            "Coal transshipment anchorage in the Mahakam delta, East Kalimantan, "
             "already documented as such (not a conventional berth) in "
             "build_geography.PORT_COORDS's pre-existing comment. Position and "
             "PortWatch traffic are proxied via Samarinda (see the PORTWATCH_UNAVAILABLE "
@@ -243,7 +243,7 @@ PORT_PROFILES: dict[PortEnum, PortProfile] = {
             "Indonesia is already covered as CORE_PS via Muara Pantai. An official "
             "Kariangau terminal schedule was located during source verification, but "
             "whether Kariangau is the actual bulk-coal operation this route intends "
-            "was not confirmed -- see sources.py for the caveat. Kept EXTENDED, not "
+            "was not confirmed, see sources.py for the caveat. Kept EXTENDED, not "
             "promoted to a country-covering role, until that is verified."
         ),
     ),
@@ -260,7 +260,7 @@ PORT_PROFILES: dict[PortEnum, PortProfile] = {
             ),
             TerminalProfile(
                 name="Norfolk International Terminals",
-                notes="Container/general cargo -- not the coal-relevant terminal, listed for completeness of the harbour's structure.",
+                notes="Container/general cargo, not the coal-relevant terminal, listed for completeness of the harbour's structure.",
             ),
             TerminalProfile(
                 name="Newport News Marine Terminal",
@@ -287,10 +287,10 @@ PORT_PROFILES: dict[PortEnum, PortProfile] = {
         role=PortRole.LOAD, network_tier=NetworkTier.CORE_PS,
         operational_model=OperationalModel.BERTHED,
         notes=(
-            "Added by P1 to close the network's Russia gap -- see opt.network."
+            "Added by P1 to close the network's Russia gap, see opt.network."
             "PortEnum.VOSTOCHNY_RU's own docstring for full sourcing. Constraints are "
             "sourced from two independent operator/agency pages (NHK Maritime "
-            "Services, Credo-Trans), not a primary port-authority document -- weaker "
+            "Services, Credo-Trans), not a primary port-authority document. Weaker "
             "sourcing than the register-backed Indian ports, disclosed as such."
         ),
     ),

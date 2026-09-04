@@ -190,7 +190,7 @@ export function AnchoragePanel({ port }: { port: AnchoragePortCode }) {
   }, [port])
 
   const hint =
-    "The real Sentinel-1 SAR vessel count for this quote's destination anchorage — never the " +
+    "The real Sentinel-1 SAR vessel count for this quote's destination anchorage, never the " +
     'origin. A sparse spot check, not a live signal: real revisit is roughly every 4–11 days, so ' +
     'the count always shows its own age. Model-derived over a real, observed SAR scene, and never ' +
     'blended with the live PortWatch congestion signal.'
@@ -247,7 +247,7 @@ export function AnchoragePanel({ port }: { port: AnchoragePortCode }) {
             </span>
           </div>
           <div className="text-body text-muted-foreground">
-            vessels detected in the anchorage box — no overlay image rendered for this scene yet
+            vessels detected in the anchorage box, no overlay image rendered for this scene yet
           </div>
           <div className="mt-1 flex items-center gap-2 rounded border border-wait/40 bg-wait-soft px-2 py-1 text-body font-semibold text-wait">
             {formatRelativeAge(census.acquired_at)} ({formatIsoShort(census.acquired_at.slice(0, 10))})

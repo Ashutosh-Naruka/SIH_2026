@@ -481,7 +481,7 @@ async def _enforce_sign_in(request: Request, call_next):
 
     A middleware rather than a dependency on each route, deliberately. Route
     annotations are opt-in, and the failure mode of an opt-in security control
-    is that a route added six months from now silently is not covered -- there
+    is that a route added six months from now silently is not covered, there
     is no error, no test failure, just an open endpoint nobody noticed. This
     covers everything that exists and everything added later, and the
     exceptions are a short list in one place where they can be read.
@@ -535,11 +535,11 @@ app.add_middleware(
 
 class VesselInput(BaseModel):
     """A real vessel already in hand, echoing ``opt.types.Vessel`` field for
-    field, except ``current_port``, which -- like ``origin_port``/``dest_port``
-    above -- is a request-ready ``PortEnum`` code string, not an embedded
+    field, except ``current_port``, which (like ``origin_port``/``dest_port``
+    above) is a request-ready ``PortEnum`` code string, not an embedded
     object. Optional on ``QuoteRequest``: omitting ``vessels`` entirely still
     prices the cargo lot (rate forecast, LOCK/WAIT, vessel-type
-    recommendation, port checks, risk) exactly as before -- only voyage
+    recommendation, port checks, risk) exactly as before, only voyage
     scheduling and repositioning have nothing to work with without one."""
 
     vessel_id: str
@@ -582,14 +582,14 @@ class QuoteRequest(BaseModel):
         description=(
             "What this cargo is worth to the caller, for the voyage-assignment optimizer. "
             "No honest default exists (revenue is a business fact, not something a market "
-            "forecast can supply) -- without it, a supplied vessel is correctly never assigned "
+            "forecast can supply), without it, a supplied vessel is correctly never assigned "
             "to this cargo, even if otherwise feasible."
         ),
     )
 
 
 class FragilityRequest(BaseModel):
-    """QuoteRequest-shaped, per the P5 API contract -- the fields
+    """QuoteRequest-shaped, per the P5 API contract: the fields
     analyze_fragility actually consumes, plus the optional variable subset.
     vessels/revenue_usd are not accepted: analyze_fragility never assigns a
     real vessel (it uses a class-representative one throughout), so there is
@@ -619,7 +619,7 @@ class OutcomeRequest(BaseModel):
 class LandedCostApiRequest(BaseModel):
     """P6: opt.landed_cost.LandedCostRequest, request-shaped (port as a
     code string, per every other endpoint's convention). Every commercial
-    term (handling/demurrage/laytime) is optional with no default -- see
+    term (handling/demurrage/laytime) is optional with no default, see
     opt.landed_cost's own module docstring for why omitting one means
     unavailable, never a silently-assumed number."""
 
@@ -631,7 +631,7 @@ class LandedCostApiRequest(BaseModel):
     commodity_class: str | None = None
     opex_usd_per_day: float = Field(0.0, ge=0.0)
     as_of: date | None = None
-    handling_rate_usd_per_mt: float | None = Field(None, description="User-declared. No repo-derived default exists -- see opt.landed_cost's module docstring.")
+    handling_rate_usd_per_mt: float | None = Field(None, description="User-declared. No repo-derived default exists, see opt.landed_cost's module docstring.")
     demurrage_usd_per_day: float | None = Field(None, description="User-declared contractual term. Requires laytime_allowance_days too.")
     laytime_allowance_days: float | None = None
     commodity: str | None = Field(None, description=f"One of: {', '.join(COMMODITY_SERIES)}.")
@@ -647,7 +647,7 @@ class LandedCostApiRequest(BaseModel):
     hull_value_usd: float | None = Field(
         None, gt=0,
         description=(
-            "User-declared insured hull value, for the war-risk premium line. No default exists -- "
+            "User-declared insured hull value, for the war-risk premium line. No default exists, "
             "omitted means the component is unavailable, never a zero line and never an assumed hull."
         ),
     )
@@ -655,7 +655,7 @@ class LandedCostApiRequest(BaseModel):
         None, ge=0,
         description=(
             "Your own quoted additional war-risk rate, as a percentage of hull value per 7-day "
-            "transit. Omit to use this system's documented placeholder assumption -- which is NOT a "
+            "transit. Omit to use this system's documented placeholder assumption, which is NOT a "
             "market rate; see opt.war_risk. The response says which of the two was used."
         ),
     )
@@ -673,21 +673,21 @@ class BackhaulRequest(BaseModel):
     discharge_port: str = Field(..., description="Where the vessel would discharge before considering a backhaul leg.")
     candidate_load_ports: list[str] | None = Field(
         None,
-        description="PortEnum codes to score. Omit to sweep every other real port (slower -- several real seconds).",
+        description="PortEnum codes to score. Omit to sweep every other real port (slower, several real seconds).",
     )
     assumed_window_days: int = Field(30, gt=0)
 
 
 class PortfolioRequest(BaseModel):
-    """F-16: opt.portfolio's spot/period-TC/COA coverage-mix optimizer --
+    """F-16: opt.portfolio's spot/period-TC/COA coverage-mix optimizer,
     the PS's own stated objective ("moving from multiple single spot
-    contracts to short/medium term multiple voyage contracts") -- given a
+    contracts to short/medium term multiple voyage contracts"), given a
     real endpoint. Deliberately standalone, not folded into POST /quote:
     the three business inputs below (plant_burden_cover_days,
     stockout_cost_usd, spot_sourcing_hazard_rate_per_day) are real
     SAIL-internal facts this system cannot infer from public market data,
     so this is an explicit, opt-in analysis with those as required fields
-    -- never a silently-defaulted guess wearing the shape of real advice."""
+, never a silently-defaulted guess wearing the shape of real advice."""
 
     vessel_class: str = Field(..., description="One of: Capesize, Panamax, Supramax, Handysize.")
     contract_term_days: int = Field(..., gt=0, description="The coverage horizon this mix is optimized over, e.g. 180 for a 6-month COA.")
@@ -698,12 +698,12 @@ class PortfolioRequest(BaseModel):
         1.0, ge=0,
         description=(
             "How many real spot-cost standard deviations you're willing to pay to avoid, "
-            "for the single `recommended` mix. 0 = minimize expected cost only. Scale-free -- "
+            "for the single `recommended` mix. 0 = minimize expected cost only. Scale-free, "
             "meaningful the same way across any vessel class/term, unlike a raw risk_aversion "
             "weight (which is scenario-specific, since variance is in absolute $^2)."
         ),
     )
-    origin_port: str | None = Field(None, description="Optional. If given with dest_port, uses real route-specific rate basis instead of the class benchmark alone -- same as POST /quote.")
+    origin_port: str | None = Field(None, description="Optional. If given with dest_port, uses real route-specific rate basis instead of the class benchmark alone. Same as POST /quote.")
     dest_port: str | None = None
     as_of: date | None = None
 
@@ -721,7 +721,7 @@ class FractureRequest(BaseModel):
     hull_value_usd: float | None = Field(
         None, gt=0,
         description=(
-            "Real insured hull value, USD. No default exists -- omit it and the response still "
+            "Real insured hull value, USD. No default exists, omit it and the response still "
             "reports the route's real Listed Areas, but war_risk_premium is null rather than "
             "priced against an assumed vessel value."
         ),
@@ -955,7 +955,7 @@ def auth_bootstrap(req: CreateUserRequest, response: Response) -> dict[str, Any]
     """Create the very first account, an admin, on an empty store only.
 
     Open by design and safe because it closes permanently the moment any
-    account exists -- the alternative, a built-in default credential, is the
+    account exists. The alternative, a built-in default credential, is the
     single most reliably exploited thing in self-hosted software. There is no
     seeded admin anywhere in this codebase and no password it will invent.
     """
@@ -975,7 +975,7 @@ def auth_bootstrap(req: CreateUserRequest, response: Response) -> dict[str, Any]
 def auth_login(req: LoginRequest, response: Response) -> dict[str, Any]:
     """Sign in and receive a session cookie.
 
-    One failure message for every cause -- unknown username, wrong password,
+    One failure message for every cause: unknown username, wrong password,
     disabled account. Distinguishing them would hand an attacker a free
     account-enumeration oracle, and the person actually locked out is no
     better served by knowing which of the three it was.
@@ -1005,7 +1005,7 @@ def auth_logout(
     response: Response, desk_session: Annotated[str | None, Cookie()] = None
 ) -> dict[str, Any]:
     """Sign out. The session is deleted server-side, not merely forgotten by
-    the browser -- which is the whole reason sessions here are stored rather
+    the browser, which is the whole reason sessions here are stored rather
     than self-contained tokens."""
     if desk_session:
         _auth_store.destroy_session(desk_session)
@@ -1147,8 +1147,8 @@ def get_alerts(_viewer: RequireViewer) -> dict[str, Any]:
 def post_alert_watch(req: CreateWatchRequest, actor: RequireManager) -> dict[str, Any]:
     """Create a standing watch.
 
-    Chartering manager or above. A watch is a claim on everyone's attention --
-    it puts a number on a bell every other user of this deployment sees -- so
+    Chartering manager or above. A watch is a claim on everyone's attention:
+    it puts a number on a bell every other user of this deployment sees, so
     it sits with the role that already carries responsibility for what goes on
     the record, not with read-only access.
     """
@@ -1184,8 +1184,8 @@ def patch_alert_watch(
 def delete_alert_watch(watch_id: str, _actor: RequireManager) -> dict[str, Any]:
     """Delete a watch and its firings.
 
-    Unlike the decision ledger -- append-only because it is evidence about
-    this system's own recommendations -- a watch is a preference. Deleting one
+    Unlike the decision ledger, append-only because it is evidence about
+    this system's own recommendations, a watch is a preference. Deleting one
     destroys no record of anything that happened in the market.
     """
     try:
@@ -1220,7 +1220,7 @@ def health() -> dict[str, str]:
 
 @app.get("/meta")
 def meta() -> dict[str, str]:
-    """Static facts a client needs to lay out its form -- currently just the
+    """Static facts a client needs to lay out its form, currently just the
     most recent date the real market data on disk covers, so a "charter as of"
     input can default and cap to it."""
     return {"latest_data_date": latest_available_date().isoformat()}
@@ -1238,7 +1238,7 @@ def fx_rate(as_of: date | None = None) -> dict[str, object]:
     or before ``as_of`` and never fabricated before its first observation.
 
     Returns ``inr_per_usd: null`` with a stated reason rather than a guess when
-    no real observation covers the requested date -- the frontend then keeps
+    no real observation covers the requested date, the frontend then keeps
     showing dollars instead of inventing a conversion.
     """
     target = as_of or latest_available_date()
@@ -1308,7 +1308,7 @@ def port_reality(
     as_of: date | None = None,
 ) -> dict[str, Any]:
     """P2: the M4 Berth Reality Engine's three-state verdict (FEASIBLE /
-    INFEASIBLE / CANNOT_VERIFY) for one vessel at one port -- geometry,
+    INFEASIBLE / CANNOT_VERIFY) for one vessel at one port, geometry,
     draft, tide authority, empirical wait/handling, observed-vs-declared
     conflicts, all in one real, sourced, dated report."""
     port = _resolve_port(code, "code")
@@ -1532,7 +1532,7 @@ def _portfolio_mix_to_json(m: PortfolioMix, *, risk_aversion_k: float, risk_aver
 @app.get("/tonnage-field")
 def tonnage_field(as_of: date | None = None) -> dict[str, Any]:
     """M1 Tonnage Field: current tightness by class (pooled) and by basin x
-    class, the identification-gate verdict, and evidence quality -- cached
+    class, the identification-gate verdict, and evidence quality. Cached
     (tonnage.field.get_snapshot), so only the first call after process start
     pays the real reconstruction cost."""
     snap = get_snapshot()
@@ -1580,7 +1580,7 @@ def tonnage_field(as_of: date | None = None) -> dict[str, Any]:
 
 @app.get("/tonnage-field/forward")
 def tonnage_field_forward(horizon: int = 90) -> dict[str, Any]:
-    """Forward TIGHTNESS INDEX (P3 requirement 5) -- p10/p50/p90 by class over
+    """Forward TIGHTNESS INDEX (P3 requirement 5), p10/p50/p90 by class over
     the requested horizon, explicitly labelled RELATIVE. Cheap: computed
     on-demand from the cached snapshot's tightness index (no re-reconstruction)."""
     if horizon <= 0 or horizon > 365:
@@ -1601,7 +1601,7 @@ def tonnage_field_forward(horizon: int = 90) -> dict[str, Any]:
 def tonnage_field_validation() -> dict[str, Any]:
     """Holdout validation per class + the ablation result (P3 requirements 6
     and 7). The ablation snapshot is cached separately from the main
-    reconstruction (tonnage.field.get_ablation_snapshot) -- the first call
+    reconstruction (tonnage.field.get_ablation_snapshot), the first call
     after process start pays the real ~45s A/B XGBoost training cost;
     subsequent calls are warm."""
     snap = get_snapshot()
@@ -1669,7 +1669,7 @@ def _quote_partial_landed_cost(quote: Any) -> dict[str, Any] | None:
     honest = replace(
         breakdown,
         wait_cost_usd_per_mt=None, wait_cost_provenance=None,
-        wait_cost_reason="opex_usd_per_day is not available at the /quote level -- see POST /landed-cost.",
+        wait_cost_reason="opex_usd_per_day is not available at the /quote level, see POST /landed-cost.",
         components_included=tuple(c for c in breakdown.components_included if c != "wait_cost"),
         components_missing=tuple(missing),
         partial_total_usd_per_mt=breakdown.partial_total_usd_per_mt - real_wait_cost,
@@ -1747,8 +1747,8 @@ class SeasonParcel(BaseModel):
     revenue_usd: float = Field(
         0.0,
         description=(
-            "What this lot is worth to the caller. No honest default exists -- revenue is a "
-            "business fact, not something a market forecast supplies -- so it defaults to 0, "
+            "What this lot is worth to the caller. No honest default exists, revenue is a "
+            "business fact, not something a market forecast supplies, so it defaults to 0, "
             "which correctly means the scheduler will not assign a vessel to it."
         ),
     )
@@ -1767,7 +1767,7 @@ def post_season_plan(req: SeasonPlanRequest) -> dict:
     """Schedule a whole book of cargo lots across a fleet, in one solve.
 
     The problem statement this system was built for asks for **multiple**
-    voyages -- the point of moving off single spot fixtures is covering a
+    voyages, the point of moving off single spot fixtures is covering a
     season with period tonnage. `opt.voyage.schedule_voyages` has always
     solved exactly that: it is a CP-SAT pickup-and-delivery model over
     `inputs.parcels` (plural) and `inputs.vessels`, maximising fleet profit
@@ -1786,8 +1786,8 @@ def post_season_plan(req: SeasonPlanRequest) -> dict:
     constraint findings, not per-lot failures.
 
     Returns HTTP 200 with the solver's own status. `NO_DATA` and an empty
-    assignment list is a legitimate answer -- it means no vessel can serve any
-    lot -- and is reported rather than dressed up.
+    assignment list is a legitimate answer, it means no vessel can serve any
+    lot, and is reported rather than dressed up.
     """
     as_of = req.as_of or latest_available_date()
     vessels = _resolve_vessels(req.vessels) or []
@@ -2062,7 +2062,7 @@ def _run_fragility_report(
 
 @app.post("/fragility")
 def post_fragility(req: FragilityRequest) -> dict[str, Any]:
-    """Real flip-point sweep against the live engines -- findings[] with
+    """Real flip-point sweep against the live engines, findings[] with
     flip_value | unavailable_reason, tier, evaluations_used, plus a
     fragile/stable ranking so a caller can lead with what matters most for
     this cargo. A full 8-variable sweep is a real, multi-second cost (Tier 3
@@ -2078,7 +2078,7 @@ async def post_fragility_stream(req: FragilityRequest) -> StreamingResponse:
     ``stage`` event as each variable's search starts and finishes, then a
     single ``result`` event carrying the report (or an ``error`` event).
 
-    The sweep is genuinely slow -- every point is a real re-solve, and a Tier 3
+    The sweep is genuinely slow, every point is a real re-solve, and a Tier 3
     escalation runs the whole CP-SAT + LSMC pipeline again. That cost is the
     product, not a defect, but a caller has to be able to SEE it being spent;
     an unexplained twenty-second wait is indistinguishable from a hang, and a
@@ -2165,12 +2165,12 @@ def _war_risk_premium_to_json(premium: Any) -> dict[str, Any]:
 
 @app.post("/fracture")
 def post_fracture(req: FractureRequest) -> dict[str, Any]:
-    """opt.fracture's real per-chokepoint disruption index for this route --
+    """opt.fracture's real per-chokepoint disruption index for this route,
     a tuple of ChokepointFracture (one per real chokepoint the route
     crosses, empty when it crosses none), the real Joint War Committee
     Listed Areas it enters, and an illustrative war-risk premium when a hull
     value was supplied (null, never a fabricated figure, otherwise). Never
-    a 500 for missing source data -- a chokepoint with no PortWatch/GDELT
+    a 500 for missing source data, a chokepoint with no PortWatch/GDELT
     file on disk still returns a real entry with `inputs_available` naming
     the gap; see opt.fracture's own module docstring."""
     origin = _resolve_port(req.origin_port, "origin_port")
@@ -2211,7 +2211,7 @@ def post_fracture(req: FractureRequest) -> dict[str, Any]:
 @app.get("/ledger/live")
 def get_ledger_live(date_from: date | None = None, date_to: date | None = None) -> dict[str, Any]:
     """Real recommendations this system actually made (LIVE_DECISION_LEDGER),
-    plus outcomes where known. Starts empty and fills forward -- an empty
+    plus outcomes where known. Starts empty and fills forward, an empty
     ledger renders as an empty list, honestly, never seeded examples."""
     linked = ledger.entries_with_outcomes(date_from, date_to)
     return {
@@ -2266,9 +2266,9 @@ def get_ledger_live(date_from: date | None = None, date_to: date | None = None) 
 @app.get("/ledger/live/performance")
 def get_ledger_live_performance(date_from: date | None = None, date_to: date | None = None) -> dict[str, Any]:
     """Cumulative regret, LOCK-decision correctness, and baseline comparison
-    -- computed ONLY from entries with a real linked outcome (pending entries
+, computed ONLY from entries with a real linked outcome (pending entries
     excluded, per requirement). Every mean field is honestly None when
-    nothing has been scored yet -- an empty ledger reports zero edge, not a
+    nothing has been scored yet, an empty ledger reports zero edge, not a
     fabricated one."""
     summary = ledger.compute_performance(date_from, date_to)
     return {
@@ -2285,7 +2285,7 @@ def get_ledger_live_performance(date_from: date | None = None, date_to: date | N
 
 @app.post("/ledger/outcome")
 def post_ledger_outcome(req: OutcomeRequest, actor: RequireManager) -> dict[str, Any]:
-    """Record a realised outcome against an existing entry -- appended as a
+    """Record a realised outcome against an existing entry, appended as a
     new, linked record; the original entry is never touched.
 
     Needs the chartering-manager role, and this is the reason the role exists.
@@ -2296,7 +2296,7 @@ def post_ledger_outcome(req: OutcomeRequest, actor: RequireManager) -> dict[str,
     computed from it mean nothing.
 
     The actor's name is appended to the note rather than replacing it, so the
-    line says both what was reported and who reported it -- the ledger is
+    line says both what was reported and who reported it, the ledger is
     append-only, so this is the only moment attribution can be attached.
     """
     try:
@@ -2321,21 +2321,21 @@ def post_ledger_outcome(req: OutcomeRequest, actor: RequireManager) -> dict[str,
 def delete_ledger_live(_admin: RequireAdmin) -> dict[str, Any]:
     """Admin only: this is irreversible.
 
-    P7/F-38: clear the Live Decision Ledger entirely -- all entries and
+    P7/F-38: clear the Live Decision Ledger entirely, all entries and
     outcomes at once, no selective deletion possible (see
     opt.ledger.reset_ledger's own docstring for why that's a genuinely
     different, safe operation from the per-entry mutation
     opt.ledger.delete_entry/update_entry still always forbid). Exists
     because every real /quote call auto-records here by design, so a
     session of ordinary use or testing had no way to start clean before a
-    demo -- verified live as a real gap, not a hypothetical one."""
+    demo, verified live as a real gap, not a hypothetical one."""
     removed = ledger.reset_ledger()
     return {"cleared": True, "records_removed": removed}
 
 
 @app.get("/ledger/replay")
 def get_ledger_replay() -> dict[str, Any]:
-    """HISTORICAL_MODEL_REPLAY -- genuine backtest over the real frozen test
+    """HISTORICAL_MODEL_REPLAY, genuine backtest over the real frozen test
     split, explicitly and unmistakably labelled retrospective. Kept
     structurally and semantically separate from /ledger/live*: a different
     top-level "kind", different fields, and its own real backtest statistics
@@ -2370,11 +2370,11 @@ def get_ledger_replay() -> dict[str, Any]:
 
 @app.post("/landed-cost")
 def post_landed_cost(req: LandedCostApiRequest) -> dict[str, Any]:
-    """P6: component-wise landed-cost breakdown -- freight, P2 empirical
+    """P6: component-wise landed-cost breakdown, freight, P2 empirical
     wait cost, handling/demurrage (user-declared only), P4 commodity price
     and FX (real, if the caller asks for them). Every component is
     separately visible with its own provenance; an unavailable one is
-    `null`, never folded into a hidden total -- see
+    `null`, never folded into a hidden total. See
     `partial_total_usd_per_mt`'s own field description and
     `components_missing`. Recompute this with different commercial-term
     assumptions any time; nothing here is cached against the request.
@@ -2405,12 +2405,12 @@ def post_landed_cost(req: LandedCostApiRequest) -> dict[str, Any]:
 def post_backhaul(req: BackhaulRequest) -> dict[str, Any]:
     """P6: backhaul opportunity score for one vessel against one or more
     candidate load ports after it discharges at `discharge_port`.
-    Informational only -- `credit_usd_per_mt` is always `null` today (see
+    Informational only, `credit_usd_per_mt` is always `null` today (see
     each result's `credit_evidence_reason`: FactPortCall carries no rate
     field to validate a $/MT credit against, structurally, not a sample-size
     gap). Never moves any recommendation this API makes elsewhere.
 
-    Omitting `candidate_load_ports` sweeps every other real port -- a real,
+    Omitting `candidate_load_ports` sweeps every other real port, a real,
     measured multi-second operation (repeated berth_truth lookups per
     candidate), which is exactly why this is its own explicit endpoint and
     not folded into POST /quote.
@@ -2454,16 +2454,16 @@ def post_backhaul(req: BackhaulRequest) -> dict[str, Any]:
 
 @app.post("/portfolio")
 def post_portfolio(req: PortfolioRequest) -> dict[str, Any]:
-    """F-16: the PS's own stated objective, given a real endpoint --
+    """F-16: the PS's own stated objective, given a real endpoint,
     ``opt.portfolio.optimize_portfolio_mix``/``efficient_frontier`` (real,
     already tested logic that previously had no way to be called from the
     running product at all). Returns one `recommended` mix at the caller's
     own `risk_aversion_k`, plus an 8-point `frontier` spanning 0 (pure
     cost-minimization) to 8 real spot-cost standard deviations of risk
-    aversion -- always both, so a screen can show a single answer and the
+    aversion, always both, so a screen can show a single answer and the
     cost/risk tradeoff behind it in one round trip.
 
-    Deliberately standalone, not part of POST /quote's automatic pipeline --
+    Deliberately standalone, not part of POST /quote's automatic pipeline,
     see PortfolioRequest's own docstring for why (three real business inputs
     this system cannot infer).
     """
@@ -2475,7 +2475,7 @@ def post_portfolio(req: PortfolioRequest) -> dict[str, Any]:
         raise HTTPException(
             status_code=503,
             detail=(
-                f"No real TC quote/forecast for {vessel_class.value} as of {resolved_as_of} -- "
+                f"No real TC quote/forecast for {vessel_class.value} as of {resolved_as_of}, "
                 "cannot build a portfolio mix. Try a different as_of date."
             ),
         )
@@ -2555,10 +2555,10 @@ def _resolve_anchorage_port(code: str) -> str:
 @app.get("/anchorage/{port_code}/census")
 def get_anchorage_census(port_code: str) -> dict[str, Any]:
     """4.3: the latest real Sentinel-1-derived vessel census for this
-    anchorage, or a real 404 when no scene has ever been processed for it --
+    anchorage, or a real 404 when no scene has ever been processed for it,
     never a fabricated empty count. This is a MODEL_DERIVED count from a
     real OBSERVED SAR scene (see ``anchorage.detect``'s own module
-    docstring), not a live signal -- Sentinel-1's real revisit cadence is
+    docstring), not a live signal, Sentinel-1's real revisit cadence is
     6-12 days at these ports; the frontend's own staleness indicator is
     mandatory precisely because a satellite count without its age is
     misleading."""
@@ -2576,10 +2576,10 @@ def get_anchorage_census(port_code: str) -> dict[str, Any]:
 def get_anchorage_overlay(port_code: str) -> FileResponse:
     """4.3 follow-up: the real Sentinel-1 crop behind the latest census, with
     a red ring drawn at every real ``Detection`` that was actually counted
-    (``anchorage.render.render_detection_overlay``) -- a picture instead of
+    (``anchorage.render.render_detection_overlay``), a picture instead of
     a table of centroid pixels. Overlay rendering is a separate, offline
     step from the harvest/detect/store pipeline (not yet wired into one
-    committed orchestrator -- see that module's own docstring), so this is
+    committed orchestrator, see that module's own docstring), so this is
     real 404, never a placeholder image, when nobody has rendered one for
     the CURRENT latest scene yet."""
     port = _resolve_anchorage_port(port_code)
@@ -2598,12 +2598,12 @@ def get_anchorage_overlay(port_code: str) -> FileResponse:
 @app.get("/anchorage/calibration")
 def get_anchorage_calibration() -> dict[str, Any]:
     """4.3: the real per-port comparison between satellite vessel counts and
-    PortWatch's own real daily call-count series -- evidence, never a
+    PortWatch's own real daily call-count series, evidence, never a
     replacement for the live PortWatch-derived congestion signal
     ``opt.congestion``/``opt.risk`` already use. A correlation is included
     only when a port has at least ``min_n_for_correlation`` real paired
     observations; below that, ``spearman_r``/``pearson_r`` are null and
-    ``finding`` says why in plain English -- see ``anchorage.calibrate``'s
+    ``finding`` says why in plain English, see ``anchorage.calibrate``'s
     own module docstring."""
     results = calibrate_all_ports()
     return {

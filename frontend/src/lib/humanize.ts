@@ -46,7 +46,7 @@ const RULES: Rule[] = [
   {
     match: /no handling_rate_usd_per_mt supplied/i,
     text:
-      'No handling tariff supplied. There is no per-tonne handling price on record to fall back on — the port data holds a throughput rate (tonnes per hour), which is a speed, not a price.',
+      'No handling tariff supplied. There is no per-tonne handling price on record to fall back on. The port data holds a throughput rate (tonnes per hour), which is a speed, not a price.',
   },
   {
     match: /no demurrage_usd_per_day\/laytime_allowance_days supplied/i,
@@ -56,18 +56,48 @@ const RULES: Rule[] = [
   {
     match: /no origin_port supplied/i,
     text:
-      'No origin port supplied, so the route — and therefore which war-risk listed areas it enters — cannot be resolved.',
+      'No origin port supplied, so the route (and therefore which war-risk listed areas it enters) cannot be resolved.',
   },
   { match: /^no commodity supplied$/i, text: 'No commodity supplied.' },
   { match: /convert_to_inr not requested/i, text: 'Not converted to rupees.' },
 ]
 
-/** The one mechanical, meaning-preserving fix applied to every backend
- *  string this module touches, matched or not: " -- " becomes a real em
- *  dash. Exported so the raw-original tooltip (see `wasRewritten` below)
- *  can carry the same fix as the humanized text. */
+/** The one mechanical fix applied to every backend string this module
+ *  touches, matched or not: prose dashes are removed.
+ *
+ *  This used to run the other way, turning " -- " into a real em dash. That
+ *  was the wrong direction. The desk's text convention is ordinary
+ *  punctuation, and it is not worth carrying a second dash convention just
+ *  for strings that happen to arrive from Python: a backend note rendered
+ *  with an em dash read as a different voice from every sentence around it,
+ *  and the dash itself is the thing that is hard to read at a glance.
+ *
+ *  Both forms now fold into ordinary punctuation. A matched pair becomes a
+ *  parenthesis, which is what a pair of dashes was standing in for. A single
+ *  dash becomes a comma, except before a capital letter, where the dash was
+ *  joining two independent clauses and a comma would be a splice.
+ *
+ *  This is a display-layer safety net, not the primary fix: the strings in
+ *  src/ and backend/ that reach the UI had their own dashes removed at
+ *  source. It stays because it also covers strings this module never
+ *  matched, and because it costs nothing to keep the guarantee mechanical.
+ *
+ *  Exported so the raw-original tooltip (see `wasRewritten` below) can carry
+ *  the same fix as the humanized text. */
 export function cleanDashes(s: string): string {
-  return s.replace(/ -- /g, ' — ')
+  return (
+    s
+      // A matched pair is a parenthetical: " ... -- aside -- ... ".
+      .replace(/ (?:--|—) (.{2,70}?) (?:--|—) /g, ' ($1) ')
+      // A single dash: comma, or a full stop where an independent clause
+      // follows (a leading capital is the only signal available here).
+      .replace(/ (?:--|—) (\S)/g, (_m, next: string) =>
+        next !== next.toLowerCase() && next === next.toUpperCase() ? `. ${next}` : `, ${next}`,
+      )
+      // A dash left stranded at either end punctuates nothing.
+      .replace(/ (?:--|—)\s*$/g, '')
+      .replace(/^(?:--|—) /g, '')
+  )
 }
 
 /**

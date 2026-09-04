@@ -103,7 +103,7 @@ def read_worldbank_pink_sheet(path: Path) -> pl.DataFrame:
     if missing:
         raise ValueError(
             f"{path.name}: expected column(s) not found in the real header row: {missing}. "
-            "The Pink Sheet's layout may have changed -- update WORLDBANK_SERIES."
+            "The Pink Sheet's layout may have changed, update WORLDBANK_SERIES."
         )
 
     header_row_idx = rows.index(header_row) + 1  # 1-indexed openpyxl row number

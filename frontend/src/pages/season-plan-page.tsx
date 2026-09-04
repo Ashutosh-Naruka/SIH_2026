@@ -236,7 +236,7 @@ export function SeasonPlanPage({
           // auditable if the reader cannot see which day that was.
           `${parcels.length} lot${parcels.length === 1 ? '' : 's'} · ${vessels.length} vessel${vessels.length === 1 ? '' : 's'} · priced from ${anchor}${latestDate ? '' : ' (data date unavailable)'}`
         }
-        hint="Schedules a whole book of cargo lots across your fleet in one solve, rather than pricing them one at a time. One vessel cannot serve two overlapping laycans, and only a joint solve can see that -- so a lot rejected here is a real constraint finding, not a per-lot failure."
+        hint="Schedules a whole book of cargo lots across your fleet in one solve, rather than pricing them one at a time. One vessel cannot serve two overlapping laycans, and only a joint solve can see that, so a lot rejected here is a real constraint finding, not a per-lot failure."
         actions={
           <Button
             variant="primary"
@@ -291,7 +291,7 @@ export function SeasonPlanPage({
                     <th><Term term="laycan">Laycan</Term> opens</th>
                     <th>Laycan closes</th>
                     <th className="text-right">
-                      <Tooltip content="What this lot is worth to you. Left at zero, the scheduler will correctly never assign a vessel to it — no revenue means no profit to gain, so it comes back unassigned by construction rather than by any port or laycan constraint.">
+                      <Tooltip content="What this lot is worth to you. Left at zero, the scheduler will correctly never assign a vessel to it, no revenue means no profit to gain, so it comes back unassigned by construction rather than by any port or laycan constraint.">
                         <span className="border-b border-dotted border-muted-foreground/50">
                           Revenue
                         </span>
@@ -398,7 +398,7 @@ export function SeasonPlanPage({
                 having to find a tooltip first. */}
             {!parcelsValid && (
               <p className="mt-1 text-body text-risk">
-                Every lot needs a positive tonnage — the highlighted field(s) above.
+                Every lot needs a positive tonnage, the highlighted field(s) above.
               </p>
             )}
           </div>
@@ -407,7 +407,7 @@ export function SeasonPlanPage({
           <div className="border-t border-border pt-2">
             <div className="mb-1 flex items-center justify-between">
               <span className="stat-label">
-                Fleet — name, current port, date open · {FLEET_SPEC.vessel_class},{' '}
+                Fleet, name, current port, date open · {FLEET_SPEC.vessel_class},{' '}
                 {formatNumber(FLEET_SPEC.dwt)} dwt, {FLEET_SPEC.draft_m} m draft,{' '}
                 {FLEET_SPEC.speed_kn} kn
               </span>
@@ -589,7 +589,7 @@ function SeasonResult({
             <Stat
               label="Laden utilisation"
               value={`${Math.round(utilisation * 100)}%`}
-              explain="Laden hours divided by total fleet hours across the plan span. The rest is waiting, ballasting or idle — it is the number a period charter has to earn back."
+              explain="Laden hours divided by total fleet hours across the plan span. The rest is waiting, ballasting or idle. It is the number a period charter has to earn back."
             />
           </div>
 
@@ -719,7 +719,7 @@ function SeasonResult({
                 </span>
                 <span className="desk-num font-semibold text-go">{money(shown.profit_usd)}</span>
                 {pinned === shown.parcel_id && (
-                  <span className="text-micro text-muted-foreground">(pinned — click to release)</span>
+                  <span className="text-micro text-muted-foreground">(pinned, click to release)</span>
                 )}
               </div>
             ) : (
@@ -795,7 +795,7 @@ function SeasonResult({
           title="Lots Not Covered"
         soWhat={'The cargoes the plan could not fit, and why. Each one needs a decision from you: widen its window, add tonnage, or accept that it moves late.'}
           meta={`${plan.unassigned.length}`}
-          hint="Every lot you sent is accounted for — assigned, or listed here with the real reason. A lot with no revenue is unassigned by construction rather than by any constraint, and says so."
+          hint="Every lot you sent is accounted for, assigned, or listed here with the real reason. A lot with no revenue is unassigned by construction rather than by any constraint, and says so."
           flush
         >
           {plan.unassigned.length === 0 ? (
@@ -870,7 +870,7 @@ function PeriodCoverPanel({
       title="Period Cover"
         soWhat={'Whether taking a ship on hire for a stretch of the season beats fixing each voyage on the day. It wins when you have steady volume and rates are heading up; it loses when your volume is uncertain.'}
       meta={`break-even hire · priced from ${asOf}`}
-      hint="The highest daily rate at which chartering in the tonnage to cover this plan still breaks even, against the real published spot TC average for the class. The benchmark is a spot index, not a period quote — this system holds no period charter rate, and does not invent one."
+      hint="The highest daily rate at which chartering in the tonnage to cover this plan still breaks even, against the real published spot TC average for the class. The benchmark is a spot index, not a period quote. This system holds no period charter rate, and does not invent one."
     >
       <div className="divide-y divide-border p-1">
         {cover.map((c) => (
@@ -918,19 +918,19 @@ function ClassCover({
           label="Spot TC average"
           value={
             c.spot_tc_average_usd_per_day == null
-              ? '—'
+              ? 'n/a'
               : `${money(c.spot_tc_average_usd_per_day)}/day`
           }
-          explain={`The real published ${c.spot_tc_series_id} value${c.spot_tc_as_of ? ` on ${c.spot_tc_as_of}` : ''}. What these ships would earn trading spot — a spot index, not a period charter rate.`}
+          explain={`The real published ${c.spot_tc_series_id} value${c.spot_tc_as_of ? ` on ${c.spot_tc_as_of}` : ''}. What these ships would earn trading spot, a spot index, not a period charter rate.`}
         />
         <Stat
           label="Room for hire"
           value={
             c.margin_over_spot_usd_per_day == null
-              ? '—'
+              ? 'n/a'
               : `${money(c.margin_over_spot_usd_per_day)}/day`
           }
-          explain="Break-even less the spot average. Positive means the book earns more per ship-day than trading the ships spot — that gap is what a period charter has to fit inside."
+          explain="Break-even less the spot average. Positive means the book earns more per ship-day than trading the ships spot, that gap is what a period charter has to fit inside."
         />
         <Stat label="Ship-days" value={c.ship_days.toFixed(1)} />
       </div>
@@ -941,7 +941,7 @@ function ClassCover({
             No published <span className="desk-num">{c.spot_tc_series_id}</span> value exists on{' '}
             {asOf}, so there is nothing real to compare the break-even against. The index is not
             published every calendar day; pricing from a day the market was open will give a
-            benchmark. The break-even itself stands — it needs no market data.
+            benchmark. The break-even itself stands, it needs no market data.
           </>
         ) : beats ? (
           <>
@@ -956,7 +956,7 @@ function ClassCover({
           <>
             These {c.vessel_class} vessels would earn more simply trading spot than this book pays
             them. The programme does not cover its own opportunity cost, so no period charter
-            improves it — the book itself is what needs to change.
+            improves it, the book itself is what needs to change.
           </>
         )}
       </p>
@@ -979,7 +979,7 @@ function ClassCover({
           <p className={cn('pb-1 text-body font-semibold', clears ? 'text-go' : 'text-risk')}>
             {clears
               ? `Clears the bar by ${money(c.break_even_hire_usd_per_day - offered)}/day.`
-              : `Short by ${money(offered - c.break_even_hire_usd_per_day)}/day — this book does not pay that hire.`}
+              : `Short by ${money(offered - c.break_even_hire_usd_per_day)}/day, this book does not pay that hire.`}
           </p>
         )}
       </div>

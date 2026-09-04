@@ -108,7 +108,7 @@ export function AccountsDrawer({ open, onClose }: { open: boolean; onClose: () =
           {!status?.enforced && (
             <p className="panel-note">
               This deployment does not require a sign-in, so these accounts control attribution
-              rather than access — outcomes recorded by a signed-in user carry their name. Set{' '}
+              rather than access. Outcomes recorded by a signed-in user carry their name. Set{' '}
               <span className="desk-num">DESK_REQUIRE_AUTH=1</span> on the backend to require one.
             </p>
           )}
@@ -175,7 +175,7 @@ export function AccountsDrawer({ open, onClose }: { open: boolean; onClose: () =
               </table>
             </div>
             <p className="text-micro leading-relaxed text-muted-foreground">
-              The last active administrator cannot be disabled or demoted — that would leave this
+              The last active administrator cannot be disabled or demoted. That would leave this
               deployment with no way to create accounts or restore access. Disabling an account
               also ends its live sessions immediately, rather than at the next expiry.
             </p>

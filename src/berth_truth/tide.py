@@ -139,7 +139,7 @@ def assess_tide(
                     f"berth {constraint.berth_id}: real tidal restriction applies to this "
                     f"vessel (laden Capesize) per {constraint.source_doc_id!r}, but no "
                     f"tide-timetable data exists in this system to resolve an actual "
-                    f"window -- cannot silently clear."
+                    f"window, cannot silently clear."
                 ),
             )
         # Real rule exists but does not name this vessel's state (e.g. a
@@ -167,7 +167,7 @@ def assess_tide(
             reason=(
                 f"berth {constraint.berth_id}: tide allowance of {constraint.tide_allowance_m}m is "
                 f"real and PORT_RULE-sourced, but its document ({constraint.source_doc_id!r}) is "
-                f"{constraint.limit_status.value}, not current -- cannot rely on it without "
+                f"{constraint.limit_status.value}, not current. Cannot rely on it without "
                 f"confirming it still holds."
             ),
         )
@@ -193,7 +193,7 @@ def assess_tide_advisory_only(*, model_name: str, suggests_clear: bool) -> TideA
         impact=TideImpact.CONDITIONAL,
         authority=TideAuthority.ADVISORY_MODEL,
         reason=(
-            f"{model_name} is an advisory model, not a port-authority rule -- even reporting "
+            f"{model_name} is an advisory model, not a port-authority rule, even reporting "
             f"suggests_clear={suggests_clear}, it cannot by itself clear a vessel. Widens "
             f"uncertainty only; a PORT_RULE source or direct port confirmation is required "
             f"to resolve this to NONE."

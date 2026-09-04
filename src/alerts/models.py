@@ -77,7 +77,7 @@ WATCH_DESCRIPTION: Final[dict[WatchKind, str]] = {
     ),
     WatchKind.RATE_MOVES: (
         "That same average moves more than a percentage you set, over a window you "
-        "set. Computed from two real observations — never from an interpolated one."
+        "set. Computed from two real observations, never from an interpolated one."
     ),
     WatchKind.OUTCOME_OVERDUE: (
         "A recommendation has sat in the decision ledger with no reported outcome "

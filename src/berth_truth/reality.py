@@ -174,7 +174,7 @@ def _declared_vs_observed(
                     dimension=dimension, declared_value=declared, observed_value=observed,
                     note=(
                         f"a real vessel call observed {dimension}={observed} at this port, "
-                        f"exceeding the declared limit of {declared} -- disclosed, and the "
+                        f"exceeding the declared limit of {declared}. Disclosed, and the "
                         f"declared limit is NOT raised on the strength of this observation."
                     ),
                 )
@@ -335,7 +335,7 @@ def get_port_reality(
         verdict = RealityVerdict.INFEASIBLE
     elif draft_untested:
         verdict = RealityVerdict.CANNOT_VERIFY
-        reason = reason or "draft check did not run for the binding berth -- see untested_checks."
+        reason = reason or "draft check did not run for the binding berth, see untested_checks."
     elif tide.impact is not TideImpact.NONE:
         verdict = RealityVerdict.CANNOT_VERIFY
         reason = tide.reason or reason

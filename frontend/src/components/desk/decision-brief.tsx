@@ -202,7 +202,7 @@ export function DecisionBrief({
               </p>
               <p className="mt-1 text-[13px] leading-relaxed text-[#2b3540]">
                 A {quote.target_vessel_class} was checked against the real published limits at both
-                ends — draft, length, beam and deadweight.{' '}
+                ends: draft, length, beam and deadweight.{' '}
                 {quote.assumed_transit_days != null ? (
                   <>
                     The voyage is about {Math.round(quote.assumed_transit_days)} days at sea, and
@@ -254,7 +254,7 @@ export function DecisionBrief({
                 {routeIsClassOnly ? (
                   <li>
                     The rate is for {quote.target_vessel_class} vessels generally, not for this
-                    specific route — no published route-level rate for this origin clears our
+                    specific route: no published route-level rate for this origin clears our
                     evidence bar. Use it to judge <em>timing</em>, not to choose between load ports.
                   </li>
                 ) : (

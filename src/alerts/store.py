@@ -153,7 +153,7 @@ class AlertStore:
         """Create a watch, refusing one that could never fire."""
         label = label.strip()
         if not label:
-            raise InvalidWatchError("A watch needs a label — it is how you will recognise it.")
+            raise InvalidWatchError("A watch needs a label, it is how you will recognise it.")
 
         if kind is WatchKind.RATE_CROSSES:
             if not vessel_class or threshold_usd_per_day is None or direction is None:

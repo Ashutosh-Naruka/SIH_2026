@@ -60,7 +60,7 @@ LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 
 #: The exact, unmistakable label the API/UI must show next to every replay
 #: figure -- requirement 11, verbatim intent.
-REPLAY_LABEL: Final[str] = "retrospective model simulation — not decisions this system actually made"
+REPLAY_LABEL: Final[str] = "retrospective model simulation, not decisions this system actually made"
 
 CONTRACT_TERM_DAYS: Final[int] = 30
 BROKER_SPREAD: Final[float] = 0.03

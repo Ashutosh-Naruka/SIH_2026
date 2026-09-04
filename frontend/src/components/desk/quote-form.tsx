@@ -5,7 +5,7 @@ import { Combobox, type ComboOption } from '@/components/ui/combobox'
 import { prettyPort } from '@/lib/format'
 import type { PortListing, QuoteRequest, VesselClass, VesselInput } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { EXAMPLE_CAPTION, workedExample } from '@/lib/worked-example'
+import { EXAMPLE_CAPTION, exampleVessels, workedExample } from '@/lib/worked-example'
 
 interface QuoteFormProps {
   ports: PortListing[]
@@ -153,6 +153,12 @@ export function QuoteForm({
   const [vessels, setVessels] = useState<VesselDraft[]>([])
   const [revenueUsd, setRevenueUsd] = useState('')
   const [vesselsOpen, setVesselsOpen] = useState(false)
+  // "Load worked example" fills fields further down the form than the button
+  // itself, so on a short viewport nothing visibly happens when you click it
+  // and it reads as a dead control. This flips the button into a confirmed
+  // state for a moment so the click is acknowledged where the cursor already
+  // is. Purely a UI affordance -- it gates nothing.
+  const [exampleLoaded, setExampleLoaded] = useState(false)
 
   const firstFieldRef = useRef<HTMLInputElement>(null)
   const formRef = useRef<HTMLDivElement>(null)
@@ -186,6 +192,15 @@ export function QuoteForm({
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     firstFieldRef.current?.focus()
   }, [focusToken])
+
+  // Let the confirmed state fall back to the normal label after a beat, so
+  // the button does not sit there claiming "Loaded" over a form the reader
+  // has since typed over.
+  useEffect(() => {
+    if (!exampleLoaded) return
+    const t = setTimeout(() => setExampleLoaded(false), 2500)
+    return () => clearTimeout(t)
+  }, [exampleLoaded])
 
   const portOptions = useMemo<ComboOption[]>(
     // F-39: p.name is the raw port id (e.g. "Newcastle_AU") -- prettyPort
@@ -221,9 +236,27 @@ export function QuoteForm({
     setContractTermDays(String(ex.contract_term_days))
     setCommodity(ex.commodity)
     setRiskTolerance(String(ex.risk_tolerance ?? 0))
+
+    // The example carries two ships. Without them the CII, laytime and
+    // fleet panels have nothing to grade and render their empty state, which
+    // makes a fully-working desk look half-built to anyone whose first click
+    // is this button. Replaces rather than appends, so clicking twice does
+    // not end up with four vessels.
+    setVessels(
+      exampleVessels(anchorDate).map((v) => {
+        vesselKeySeq += 1
+        return { key: `vessel-${vesselKeySeq}`, ...v }
+      }),
+    )
+    // Open the section too, otherwise the two vessels are loaded into a
+    // collapsed panel and the reader has no way to know they are there.
+    setVesselsOpen(true)
+
     // The date fields have been set deliberately; the F-02 resync must not
     // come along afterwards and move them back to its own defaults.
     resynced.current = true
+
+    setExampleLoaded(true)
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -357,7 +390,7 @@ export function QuoteForm({
             </Field>
           </div>
 
-          <Field label={`Risk tolerance — ${riskTolerance}`} className="max-w-xs">
+          <Field label={`Risk tolerance: ${riskTolerance}`} className="max-w-xs">
             <input
               type="range"
               min={0}
@@ -546,11 +579,27 @@ export function QuoteForm({
             <button
               type="button"
               onClick={fillWithExample}
-              className="inline-flex h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-sm border border-border bg-surface-2 px-3 text-caption font-semibold text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring"
-              title={`Fill this form with a real cargo: ${EXAMPLE_CAPTION}`}
+              className={cn(
+                'inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-sm border px-3 text-caption font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring',
+                exampleLoaded
+                  ? 'border-go/40 bg-go/15 text-go-on-soft'
+                  : 'border-border bg-surface-2 text-muted-foreground hover:bg-accent hover:text-foreground',
+              )}
+              title={`Fill this form with a real cargo: ${EXAMPLE_CAPTION}, plus two vessels in hand`}
             >
-              Load worked example
+              {exampleLoaded ? (
+                <>
+                  <span aria-hidden="true">✓</span>Example loaded, 2 vessels
+                </>
+              ) : (
+                'Load worked example'
+              )}
             </button>
+            {/* A live region, so the confirmation is not purely visual: a
+                screen reader is told the form was filled too. */}
+            <span className="sr-only" role="status" aria-live="polite">
+              {exampleLoaded ? 'Worked example loaded, including two vessels in hand.' : ''}
+            </span>
           </div>
         </form>
       </Panel>

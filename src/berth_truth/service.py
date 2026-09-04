@@ -141,7 +141,7 @@ def _check_size(candidate: ResolvedBerth, vessel_dwt: float) -> tuple[bool | Non
     if constraint.max_displacement_t is not None:
         return None, (
             f"size: berth {constraint.berth_id} publishes displacement "
-            f"({constraint.max_displacement_t:,.0f} t), not DWT -- vessel DWT not compared"
+            f"({constraint.max_displacement_t:,.0f} t), not DWT. Vessel DWT not compared"
         )
     return None, f"size: no max_dwt or max_displacement_t published for berth {constraint.berth_id}"
 
@@ -254,7 +254,7 @@ def check_vessel_against_register(
             untested_checks=(),
             observed_only_berths=observed_only_ids,
             reason=(
-                f"{port_id.value} has no published constraint berth for this query -- only "
+                f"{port_id.value} has no published constraint berth for this query, only "
                 f"observed-operational berths with no citable limits: {', '.join(observed_only_ids)}"
             ),
         )

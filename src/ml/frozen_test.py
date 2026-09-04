@@ -95,7 +95,7 @@ def load_frozen_test() -> pl.DataFrame:
         raise FrozenTestAccessError(
             "Reading the frozen test split outside an allow_test_set_access(...) "
             "block. Tune hyperparameters and select models on `valid`; the test "
-            "split is read once, at the very end, for the final report -- wrap "
+            "split is read once, at the very end, for the final report. Wrap "
             "that one call site in:\n"
             "    with allow_test_set_access(\"why\"):\n"
             "        test = load_frozen_test()"

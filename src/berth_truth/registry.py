@@ -156,11 +156,11 @@ _DHAMRA_DPC07_ROWS: Final[tuple[BerthConstraint, ...]] = (
         effective_from=_DHAMRA_DPC07_EFFECTIVE_FROM, effective_to=None,
         limit_status=LimitStatus.PUBLISHED,
         internal_conflict=(
-            "DPC/07 section 19's Berth Parameters table lists BB4 (new in this edition -- "
+            "DPC/07 section 19's Berth Parameters table lists BB4 (new in this edition, "
             "absent from DPC/06), and section 20's berth-allotment-criteria list also names "
-            "it (Semi Mechanised / Manual). But section 20.1's operational capacity note -- "
+            "it (Semi Mechanised / Manual). But section 20.1's operational capacity note, "
             "'the port has capacity ... 1 bulk/break bulk vessel on semi mechanised/manual "
-            "berth BB3A' -- still names only BB3A, not BB4, for that simultaneous-vessel "
+            "berth BB3A', still names only BB3A, not BB4, for that simultaneous-vessel "
             "count. Recorded as found; not resolved."
         ),
     ),
@@ -420,7 +420,7 @@ _VIZAG_INNER: Final[tuple[tuple[str, float, float | None, float, float | None, b
             "used: see below, this row's max_loa_m is overridden to None). A shipping "
             "agency's news summary (GAC Hot Port News, published 2026-05-15, not a primary "
             "VPA document) separately reports the jetty was recommissioned with permissible "
-            "draft raised 11.0m -> 11.5m w.e.f. 2026-05-12 -- not independently confirmed "
+            "draft raised 11.0m -> 11.5m w.e.f. 2026-05-12, not independently confirmed "
             "against a primary VPA circular, so no current value is seeded for this berth "
             "either. Both facts together are why this entire document is treated as "
             "SUPERSEDED rather than current."

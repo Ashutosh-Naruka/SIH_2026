@@ -71,7 +71,7 @@ const PROVENANCE_LABEL: Record<string, { label: string; hint: string }> = {
   USER_INPUT: { label: 'your input', hint: 'The value you typed into the quote form.' },
   DERIVED: { label: 'derived', hint: 'Computed from your other inputs, not typed directly.' },
   OBSERVED: { label: 'real data', hint: 'Read from current, real port/market data.' },
-  ASSUMPTION: { label: 'assumed', hint: 'A static fallback -- no current real data available.' },
+  ASSUMPTION: { label: 'assumed', hint: 'A static fallback, no current real data available.' },
 }
 
 /** "Supramax:2:D" -> "2x Supramax" (+ " via transshipment" for "...:T") --
@@ -79,7 +79,7 @@ const PROVENANCE_LABEL: Record<string, { label: string; hint: string }> = {
  * config_id), not meant for display as-is; this is presentation only, the
  * underlying string is untouched. */
 function prettyConfigId(id: string | null): string {
-  if (!id) return '—'
+  if (!id) return 'n/a'
   const [vesselClass, nVessels, mode] = id.split(':')
   if (!vesselClass || !nVessels) return id
   return `${nVessels}x ${vesselClass}${mode === 'T' ? ' via transshipment' : ''}`
@@ -122,7 +122,7 @@ function summarize(fp: FlipPoint): string {
 
   if (fp.variable === 'permissible_draft_m' || fp.variable === 'vessel_draft_m') {
     const margin = Math.abs(fp.absolute_delta ?? 0)
-    return `${label} margin = ${formatNumber(margin, 2)} m before ${changed} flips — ${margin < 0.3 ? 'operationally fragile' : 'a real margin exists'}.`
+    return `${label} margin = ${formatNumber(margin, 2)} m before ${changed} flips: ${margin < 0.3 ? 'operationally fragile' : 'a real margin exists'}.`
   }
   return `${label}: ${deltaStr} flips ${changed} (${fp.flip_value != null ? formatNumber(fp.flip_value, 2) : '?'} ${fp.unit}).`
 }
@@ -402,15 +402,15 @@ export function FragilityPage({ ports }: { ports: PortListing[] }) {
           <Panel title="Current Decision"
         soWhat={'The recommendation being stress-tested here, so you can see what is being pushed on. Change the cargo or route above and re-run to test a different one.'} className="lg:col-span-1">
             <div className="flex flex-col gap-1 p-1">
-              <StatRow label="Lock action" value={report.current_decision.lock_action ?? '—'} />
-              <StatRow label="Vessel class" value={report.current_decision.target_vessel_class ?? '—'} />
-              <StatRow label="Envelope status" value={report.current_decision.envelope_status ?? '—'} />
+              <StatRow label="Lock action" value={report.current_decision.lock_action ?? 'n/a'} />
+              <StatRow label="Vessel class" value={report.current_decision.target_vessel_class ?? 'n/a'} />
+              <StatRow label="Envelope status" value={report.current_decision.envelope_status ?? 'n/a'} />
               <StatRow label="Fleet mix" value={prettyConfigId(report.current_decision.chosen_config_id)} />
             </div>
           </Panel>
 
           <Panel title="Sweep Cost"
-        soWhat={'How long the test took and how much work it did. It is slow because every point is a genuine re-solve of the whole quote, not a lookup — if you only need the headline, use the quick sweep.'} className="lg:col-span-2">
+        soWhat={'How long the test took and how much work it did. It is slow because every point is a genuine re-solve of the whole quote, not a lookup. If you only need the headline, use the quick sweep.'} className="lg:col-span-2">
             <div className="flex flex-col gap-1 p-1">
               <StatRow label="Total evaluations" value={report.evaluations_used} />
               <StatRow label="Findings" value={report.findings.length} />
@@ -422,7 +422,7 @@ export function FragilityPage({ ports }: { ports: PortListing[] }) {
           </Panel>
 
           <Panel title="Findings"
-        soWhat={'Each row says how far one input can move before the answer changes. Anything marked FRAGILE is a number worth confirming with the agent or the owner before you commit — the recommendation rests on it.'} meta="fragile leads" className="lg:col-span-3" flush>
+        soWhat={'Each row says how far one input can move before the answer changes. Anything marked FRAGILE is a number worth confirming with the agent or the owner before you commit. The recommendation rests on it.'} meta="fragile leads" className="lg:col-span-3" flush>
             <div>
               {ranked.map((fp) => (
                 <FindingRow key={fp.variable} fp={fp} />

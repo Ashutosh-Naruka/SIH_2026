@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
  *  -- loading, error, empty, populated -- and the explanation is the same in
  *  all of them. */
 const SO_WHAT =
-  'How exposed this voyage is to the world\'s narrow shipping passages — ' +
+  'How exposed this voyage is to the world\'s narrow shipping passages, ' +
   'Suez, Hormuz, Malacca. A high reading means one incident far away can ' +
   'reroute your ship and add weeks: keep a longer laycan and do not commit ' +
   'the whole volume to one sailing.'

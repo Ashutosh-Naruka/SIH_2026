@@ -30,7 +30,7 @@ export function VoyageAssignmentsTable({
       className="h-full"
       id="assignments"
       title="Voyage Assignments"
-      soWhat={'Which ship carries which parcel, and when. If a vessel is doing two things at once or arriving after the laycan closes, the plan is infeasible — widen the laycan or add tonnage and re-solve.'}
+      soWhat={'Which ship carries which parcel, and when. If a vessel is doing two things at once or arriving after the laycan closes, the plan is infeasible. Widen the laycan or add tonnage and re-solve.'}
       hint="CP-SAT profit-maximising assignment of your supplied vessels to this cargo, plus repositioning advice for any idle vessel. Times are days from now; profit needs a cargo revenue figure in the quote form."
       meta={`${assigns.length} assigned · total ${moneyCompact(rec.total_voyage_profit_usd)}`}
       flush
@@ -66,7 +66,7 @@ export function VoyageAssignmentsTable({
         </table>
       ) : (
         <p className="px-2 py-3 text-lead text-muted-foreground">
-          No vessel assigned to this cargo — supply a vessel and a cargo revenue figure to assign.
+          No vessel assigned to this cargo. Supply a vessel and a cargo revenue figure to assign.
         </p>
       )}
 
@@ -93,7 +93,7 @@ export function VoyageAssignmentsTable({
                   title={
                     r.data_provenance === 'ESTIMATED'
                       ? 'Built from PortWatch export-tonnage estimates (their own model output, not a measured figure).'
-                      : 'No real tonnage-field coverage for this port — neutral 0.5 prior, not data-backed.'
+                      : 'No real tonnage-field coverage for this port: neutral 0.5 prior, not data-backed.'
                   }
                 >
                   p(cargo) {formatNumber(r.cargo_probability_within_window * 100, 0)}%

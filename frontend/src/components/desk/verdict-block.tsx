@@ -67,7 +67,7 @@ export function VerdictBlock({ quote }: { quote: QuoteResult }) {
         <>
           The <strong className="font-semibold text-foreground">{quote.lock_action}</strong>{' '}
           verdict already prices in the value of waiting and locking later ({money(optionValue)}
-          /day) — that's why it can differ from the simple always-spot comparison above.
+          /day), that's why it can differ from the simple always-spot comparison above.
         </>
       ),
     })
@@ -190,10 +190,10 @@ export function VerdictBlock({ quote }: { quote: QuoteResult }) {
             <tr className={!isLock ? 'bg-wait-soft' : undefined}>
               <td className="font-semibold">Wait for trough</td>
               <td className="desk-num text-right">
-                {waitRate != null ? <Figure value={waitRate} kind="usd" /> : '—'}
+                {waitRate != null ? <Figure value={waitRate} kind="usd" /> : 'n/a'}
               </td>
               <td className="desk-num text-right font-semibold">
-                {waitTerm != null ? <Figure value={waitTerm} kind="usdCompact" /> : '—'}
+                {waitTerm != null ? <Figure value={waitTerm} kind="usdCompact" /> : 'n/a'}
               </td>
               <td className="text-right text-body text-muted-foreground">{windowText}</td>
             </tr>

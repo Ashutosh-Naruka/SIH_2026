@@ -53,9 +53,9 @@ function IndexTypeBanner({ data }: { data: TonnageFieldResponse }) {
   }
   return (
     <div className="border border-wait bg-wait-soft p-2 text-body text-wait">
-      <span className="font-bold uppercase tracking-wide">Relative index -- not absolute tonnage.</span>{' '}
+      <span className="font-bold uppercase tracking-wide">Relative index, not absolute tonnage.</span>{' '}
       Every figure below is a{' '}
-      <span className="font-semibold">Physical Supply Pressure Index / Tonnage Tightness Index</span> -- a
+      <span className="font-semibold">Physical Supply Pressure Index / Tonnage Tightness Index</span>, a
       dimensionless, within-class-over-time signal. It is not a count of ships or a DWT figure available to
       charter, and is never presented as one on this page.
     </div>
@@ -104,7 +104,7 @@ function BasinBreakdownPanel({ data }: { data: TonnageFieldResponse }) {
   return (
     <Panel
       title="Basin × Class Breakdown"
-        soWhat={'Where the scarcity actually is, by region and ship size. Tightness in one basin does not bind you if your cargo loads in another — check your own row before reacting to the headline.'}
+        soWhat={'Where the scarcity actually is, by region and ship size. Tightness in one basin does not bind you if your cargo loads in another, check your own row before reacting to the headline.'}
       meta={`${data.tightness_by_basin_class.length} cells`}
       actions={<ProvenanceTag kind="MODEL_DERIVED" />}
       flush
@@ -248,7 +248,7 @@ function ForwardTightnessPanel({ forward }: { forward: TonnageFieldForwardRespon
       title="Forward Tightness"
         soWhat={'Where the model thinks scarcity is heading over the coming weeks. Loosening ahead is an argument for waiting; tightening ahead is an argument for fixing now.'}
       meta={forward ? `p10 / p50 / p90, +${forward.projections.at(-1)?.horizon_days ?? 0}d` : undefined}
-      hint="Persistence / random-walk-with-drift extrapolation of the recent trailing trend -- not a forecast model. The band widens as sqrt(horizon), honestly reflecting that nothing beyond recent port activity is known this far out."
+      hint="Persistence / random-walk-with-drift extrapolation of the recent trailing trend, not a forecast model. The band widens as sqrt(horizon), honestly reflecting that nothing beyond recent port activity is known this far out."
       actions={<ProvenanceTag kind="MODEL_DERIVED" />}
     >
       <div className="flex flex-col gap-2 p-1">
@@ -368,7 +368,7 @@ function ValidationPanel() {
   return (
     <Panel
       title="Does this actually improve the forecast?"
-        soWhat={'An honest scoreboard of whether adding this signal made the rate forecast better or worse. If it did not help, that is reported here rather than hidden — and you should weight this screen accordingly.'}
+        soWhat={'An honest scoreboard of whether adding this signal made the rate forecast better or worse. If it did not help, that is reported here rather than hidden, and you should weight this screen accordingly.'}
       meta="Forecast alone vs. forecast + this page's tightness signal"
       hint="The real test that decides whether this page's tightness signal is actually used in pricing: does adding it measurably improve the freight forecast, out-of-sample, on the real frozen holdout?"
       className="lg:col-span-3"
@@ -377,7 +377,7 @@ function ValidationPanel() {
       {!requested && (
         <div className="flex flex-col items-start gap-2 p-2">
           <p className="text-body leading-relaxed text-muted-foreground">
-            Runs a real A/B XGBoost ablation on the first load — about 45 seconds, training six real
+            Runs a real A/B XGBoost ablation on the first load, about 45 seconds, training six real
             models. Cached after that.
           </p>
           <Button variant="primary" size="md" onClick={load}>
@@ -403,7 +403,7 @@ function ValidationPanel() {
             )}
           >
             <span className="font-bold uppercase tracking-wide">
-              {validation.ablation.adopt_b ? 'Adopted -- wired into the live forecast' : 'Not adopted -- decision-support only'}
+              {validation.ablation.adopt_b ? 'Adopted (wired into the live forecast' : 'Not adopted) decision-support only'}
             </span>
             <p className="mt-0.5 text-foreground">{validation.ablation.reasoning}</p>
           </div>

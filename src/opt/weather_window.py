@@ -392,7 +392,7 @@ def transit_buffer(
         forecast_delay_days = 0.0
         expected_delay_days = climatology_delay_days
         explanation = (
-            f"No live marine forecast covers this laycan ({laycan_start} to {laycan_end}) -- "
+            f"No live marine forecast covers this laycan ({laycan_start} to {laycan_end}), "
             f"priced from climatology only: {climatology_delay_days:.1f} expected delay day(s) "
             f"from {basins_label}."
         )

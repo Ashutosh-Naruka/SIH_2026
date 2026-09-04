@@ -96,7 +96,7 @@ def download(force: bool = False, url: str = SOURCE_URL, out_path: Path = CSV_PA
     ``_already_pulled`` would wrongly trust on the next run.
     """
     if not force and _already_pulled(out_path):
-        LOGGER.info(f"{out_path} already present ({out_path.stat().st_size:,} bytes) -- skipping download")
+        LOGGER.info(f"{out_path} already present ({out_path.stat().st_size:,} bytes), skipping download")
         return out_path
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -141,7 +141,7 @@ def write_pull_notes(
 
     notes_path.parent.mkdir(parents=True, exist_ok=True)
     notes_path.write_text(
-        "# IBTrACS Best-Track Archive -- Pull Notes\n\n"
+        "# IBTrACS Best-Track Archive: Pull Notes\n\n"
         f"**Pull date:** {retrieved_at.date().isoformat()}\n"
         "**Source:** NOAA NCEI International Best Track Archive for Climate Stewardship "
         "(IBTrACS), v04r01, \"ALL\" list\n"
@@ -151,7 +151,7 @@ def write_pull_notes(
         f"**Data rows:** {n_rows:,} (excludes header and the units row directly "
         "beneath it)\n\n"
         "## Licence\n\n"
-        "Public domain per WMO/NOAA data policy -- no restrictions on use. NOAA's own "
+        "Public domain per WMO/NOAA data policy, no restrictions on use. NOAA's own "
         "documentation asks users to cite:\n\n"
         f"{_CITATION}\n\n"
         "## Downstream use\n\n"

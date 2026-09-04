@@ -120,7 +120,7 @@ CHOKEPOINT_GEOMETRY: Final[dict[str, ChokepointGeometry]] = {
         12.788597, 43.349545, 30.0, "~20 nm narrows (EIA World Oil Transit Chokepoints); floored at 30 nm"
     ),
     "chokepoint5": ChokepointGeometry(  # Malacca Strait: ~805 km / 435 nm published length -> half ~= 217, rounded
-        1.516955, 102.665106, 220.0, "half of ~805 km published strait length -- deliberately large, see docstring"
+        1.516955, 102.665106, 220.0, "half of ~805 km published strait length, deliberately large, see docstring"
     ),
     "chokepoint6": ChokepointGeometry(  # Strait of Hormuz: ~90 nm published length (EIA) -> half = 45
         26.296853, 56.859848, 45.0, "half of ~90 nm published strait length (EIA World Oil Transit Chokepoints)"
@@ -165,7 +165,7 @@ CHOKEPOINT_GEOMETRY: Final[dict[str, ChokepointGeometry]] = {
         -5.966841, 105.775220, 30.0, "size-class judgement: narrow strait"
     ),
     "chokepoint20": ChokepointGeometry(  # Makassar Strait: size-class judgement -- very wide/long
-        0.352281, 119.257065, 150.0, "size-class judgement: very wide and long -- see docstring's Malacca note"
+        0.352281, 119.257065, 150.0, "size-class judgement: very wide and long, see docstring's Malacca note"
     ),
     "chokepoint21": ChokepointGeometry(  # Magellan Strait: ~570 km / 310 nm published length -> half = 155
         -52.640340, -69.594832, 155.0, "half of ~570 km published strait length"
