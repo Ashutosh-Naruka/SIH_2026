@@ -461,15 +461,29 @@
    * value (mono, tabular) hard right on the same baseline. Used everywhere a
    * single figure is shown, so nothing gets the "big number floating in space"
    * treatment except the verdict and its cost comparison.
+   *
+   * A dotted leader fills the gap between them (the classic invoice/table-of-
+   * contents pattern) rather than leaving it blank: on a wide panel a short
+   * label and a short value under plain `justify-between` end up separated by
+   * a large empty gap, and the eye has to jump it cold to find which value
+   * belongs to which label. The dots give it a line to follow instead.
    */
   .stat-row {
-    @apply flex items-baseline justify-between gap-3 py-0.5;
+    @apply flex items-baseline gap-2 py-0.5;
   }
   .stat-label {
-    @apply text-caption font-semibold uppercase tracking-wide text-muted-foreground;
+    @apply flex min-w-0 flex-1 items-baseline gap-2 text-caption font-semibold uppercase
+           tracking-wide text-muted-foreground;
+  }
+  .stat-label::after {
+    content: '';
+    flex: 1 1 0.5rem;
+    min-width: 0.5rem;
+    margin-bottom: 0.3em;
+    border-bottom: 1px dotted color-mix(in oklab, var(--border) 70%, transparent);
   }
   .stat-value {
-    @apply font-mono text-body tabular-nums text-foreground;
+    @apply shrink-0 font-mono text-body tabular-nums text-foreground;
   }
 
   .desk-table {

@@ -172,6 +172,20 @@ BASIN_BOUNDS: Final[dict[str, BasinBox]] = {
 }
 
 
+#: Plain-English label for each ``BASIN_BOUNDS`` key, for anything that puts a
+#: basin name in front of a user (``opt.risk.cyclone_season_alert``'s message
+#: and ``RiskAlert.subject``) rather than passing the internal
+#: ``SCREAMING_SNAKE_CASE`` key straight through -- the same house pattern as
+#: ``opt.chokepoints.CHOKEPOINT_NAMES`` for chokepoint ids.
+BASIN_LABELS: Final[dict[str, str]] = {
+    "BAY_OF_BENGAL": "Bay of Bengal",
+    "ARABIAN_SEA": "Arabian Sea",
+    "NE_AUSTRALIA": "NE Australia",
+    "MOZAMBIQUE_CHANNEL": "Mozambique Channel",
+    "SE_ASIA": "SE Asia (Makassar Strait)",
+}
+
+
 def basins_for_coords(lat: float, lon: float) -> list[str]:
     """Every named basin whose box contains this point, in BASIN_BOUNDS's
     definition order. Usually zero or one (the boxes are disjoint); a list,

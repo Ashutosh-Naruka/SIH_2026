@@ -166,7 +166,10 @@ class TestCycloneSeasonAlert:
         )
         assert result is not None
         assert result.category == "cyclone_season"
-        assert result.subject == "BAY_OF_BENGAL"
+        # A plain-English label, not the raw BASIN_BOUNDS/climatology-parquet
+        # key -- RiskAlert.subject is rendered straight into the Risk Feed
+        # panel, and "BAY_OF_BENGAL" leaking there was a real reported bug.
+        assert result.subject == "Bay of Bengal"
         assert result.metric_value == pytest.approx(0.30)
         assert result.severity == "critical"
 
@@ -268,7 +271,7 @@ class TestAssessRiskWithCycloneContext:
         )
         cyclone_alerts = [a for a in result.alerts if a.category == "cyclone_season"]
         assert len(cyclone_alerts) == 1
-        assert cyclone_alerts[0].subject == "BAY_OF_BENGAL"
+        assert cyclone_alerts[0].subject == "Bay of Bengal"
 
 
 class TestAssessRiskAndReviewTrigger:

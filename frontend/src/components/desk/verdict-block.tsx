@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { transition } from '@/lib/motion'
 import { ExplanationBlock } from '@/components/desk/explanation'
@@ -53,6 +54,51 @@ export function VerdictBlock({ quote }: { quote: QuoteResult }) {
   // I look at this again" answer the engine already has.
   const p10Total = rec.p10_savings_usd_per_day * term
   const p90Total = rec.p90_savings_usd_per_day * term
+
+  // The caveats that used to run as three separately-styled prose paragraphs
+  // (option value, weather buffer, re-check) are collected here and rendered
+  // as one bulleted list below -- same information, one visual block instead
+  // of three, so the eye can skip past it in one pass.
+  const caveatItems: { key: string; content: ReactNode }[] = []
+  if (optionValue != null && optionValue > 0) {
+    caveatItems.push({
+      key: 'option-value',
+      content: (
+        <>
+          The <strong className="font-semibold text-foreground">{quote.lock_action}</strong>{' '}
+          verdict already prices in the value of waiting and locking later ({money(optionValue)}
+          /day) — that's why it can differ from the simple always-spot comparison above.
+        </>
+      ),
+    })
+  }
+  // 2.4: a real per-basin cyclone climatology + live 7-day marine forecast
+  // delay taxes the WAIT branch of the fused decision above
+  // (opt.stopping.solve_lock_or_wait) -- listed only when it actually moved
+  // the number, using the backend's own plain-English sentence rather than
+  // re-deriving one here.
+  if (quote.transit_buffer != null && quote.transit_buffer.expected_delay_days > 0) {
+    caveatItems.push({
+      key: 'weather-buffer',
+      content: (
+        <>
+          <strong className="font-semibold text-foreground">Weather buffer:</strong> +
+          {quote.transit_buffer.expected_delay_days.toFixed(1)} expected delay day(s) priced into
+          the WAIT comparison above. {quote.transit_buffer.explanation}
+        </>
+      ),
+    })
+  }
+  caveatItems.push({
+    key: 're-check',
+    content: (
+      <>
+        <strong className="font-semibold text-foreground">Re-check:</strong>{' '}
+        {rec.review_trigger.schedule.toLowerCase()}, or immediately if{' '}
+        {rec.review_trigger.conditions.join(', or if ')}.
+      </>
+    ),
+  })
 
   return (
     <div
@@ -210,38 +256,11 @@ export function VerdictBlock({ quote }: { quote: QuoteResult }) {
             </span>
           </div>
 
-          {/*
-            The two caveats below qualify the numbers above rather than adding
-            new ones, so they are grouped into one tinted block instead of
-            running as loose paragraphs between the figures -- same words,
-            same visibility, but the eye can now skip the prose and come back
-            to it, which it could not when it was interleaved.
-          */}
-          {optionValue != null && optionValue > 0 && (
-            <p className="mt-2 rounded-sm border-l-2 border-market/50 bg-market-soft/50 px-2 py-2 text-caption leading-relaxed text-muted-foreground">
-              The <strong className="font-semibold text-foreground">{quote.lock_action}</strong>{' '}
-              verdict above already prices in the value of keeping the right to wait and lock later
-              instead ({money(optionValue)}/day) — that's why it can differ from the simple
-              always-spot comparison above, which doesn't account for that option.
-            </p>
-          )}
-          {/* 2.4: a real per-basin cyclone climatology + live 7-day marine
-           * forecast delay taxes the WAIT branch of the fused decision above
-           * (opt.stopping.solve_lock_or_wait) -- shown only when it actually
-           * moved the number, using the backend's own plain-English sentence
-           * rather than re-deriving one here. */}
-          {quote.transit_buffer != null && quote.transit_buffer.expected_delay_days > 0 && (
-            <p className="rounded-sm border-l-2 border-wait/50 bg-wait-soft/60 px-2 py-2 text-caption leading-relaxed text-muted-foreground">
-              <span className="font-semibold text-foreground">Weather buffer: </span>
-              +{quote.transit_buffer.expected_delay_days.toFixed(1)} expected delay day(s) priced
-              into the WAIT comparison above. {quote.transit_buffer.explanation}
-            </p>
-          )}
-          <p className="mt-2 border-t border-border/60 pt-2 text-caption leading-relaxed text-muted-foreground">
-            <span className="font-semibold text-foreground">Re-check: </span>
-            {rec.review_trigger.schedule.toLowerCase()}, or immediately if{' '}
-            {rec.review_trigger.conditions.join(', or if ')}.
-          </p>
+          <ul className="mt-2 list-disc space-y-1 border-t border-border/60 py-2 pl-4 text-caption leading-relaxed text-muted-foreground marker:text-muted-foreground/50">
+            {caveatItems.map((item) => (
+              <li key={item.key}>{item.content}</li>
+            ))}
+          </ul>
           {/* F-37: the backend already builds a real, plain-English "why"
            * for this exact verdict (opt.explain.build_explanations) --
            * previously computed on every quote and never rendered

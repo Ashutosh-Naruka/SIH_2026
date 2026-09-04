@@ -113,4 +113,6 @@ export const GLOSSARY: Record<string, string> = {
     'The highest rate at which locking still beats waiting. Above it, the model says wait; at or below it, lock.',
   basis:
     'The adjustment from a class-wide benchmark rate to a specific route, where enough real route evidence exists to justify one.',
+  'z-score':
+    'How many standard deviations today’s value sits from its own recent baseline. Past the alert’s threshold, that shift is unusual enough to flag.',
 }

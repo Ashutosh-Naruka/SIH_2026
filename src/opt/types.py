@@ -534,13 +534,27 @@ class ProgressStage(BaseModel):
 
 class RouteLeg(BaseModel):
     """One port-to-port hop of a solver route, with a real navigable polyline
-    (searoute where it resolves, a great-circle interpolation otherwise)."""
+    (searoute where it resolves, a great-circle interpolation otherwise).
+
+    ``origin_connector_nm``/``dest_connector_nm`` disclose a narrower gap than
+    ``is_great_circle_fallback``: searoute's own marine-network graph often
+    has no node near a real port (a river or bay port off the main shipping
+    lanes, e.g. Paradip), so ``opt.route_trace`` asks it to splice the real
+    port coordinate onto whichever network node it actually resolved to
+    (``append_orig_dest=True``). That splice is a straight line, not a
+    routed path -- these two fields carry its length in nm (0.0 when the
+    resolved node already coincided with the real port, i.e. no splice was
+    needed) so a renderer can draw that specific stretch honestly rather
+    than presenting it with the same confidence as the real searoute path
+    it's attached to."""
     model_config = ConfigDict(frozen=True)
 
     from_port: PortEnum
     to_port: PortEnum
     distance_nm: float
     is_great_circle_fallback: bool
+    origin_connector_nm: float
+    dest_connector_nm: float
     polyline: tuple[tuple[float, float], ...]  # (lon, lat) pairs, GeoJSON order
 
 

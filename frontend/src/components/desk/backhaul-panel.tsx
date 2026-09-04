@@ -109,7 +109,8 @@ export function BackhaulPanel({
     >
       {!vessel ? (
         <div className="flex h-full items-center justify-center p-2 text-center text-body text-muted-foreground">
-          Add a vessel to the quote to score backhaul opportunities for it.
+          Add a real vessel under "Vessels in hand" to score backhaul opportunities for it — the
+          target class above isn't a specific ship to reposition.
         </div>
       ) : error ? (
         <div className="p-2 text-body text-risk">{error}</div>

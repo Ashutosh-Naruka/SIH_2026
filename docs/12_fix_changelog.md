@@ -4337,3 +4337,284 @@ Twin, Fragility and Ledger were not touched and carry the same `--` convention i
 `risk.py`/`explain.py`/`quote.py` text edits, confirming no test asserts on the exact `--` wording
 that changed. `tsc -b --noEmit` and `npm run build` clean after the full pass. Both dev servers
 (`:8000`, `:5173`) confirmed still live and serving the edited code.
+
+## 2026-09-04 — Reviewer pass 5: the verdict-block caveat consolidation left undone in pass 4
+
+Closes the one item pass 4 explicitly flagged as not done: `verdict-block.tsx` rendered its three
+caveats (option value, weather buffer, re-check trigger) as three separately-styled `<p>` blocks —
+two with their own colour-tinted left border and soft background (`border-market`/`bg-market-soft`
+for option value, `border-wait`/`bg-wait-soft` for weather buffer), the third plain text with just
+a top divider. A stale comment directly above them already claimed they were "grouped into one
+tinted block instead of running as loose paragraphs" — that comment described the intended fix,
+not the actual code below it, which is presumably how this got flagged as still outstanding rather
+than closed.
+
+Replaced all three with a single `<ul>`, built from a `caveatItems` array assembled above the
+`return` (same conditions as before: option-value only when `optionValue > 0`, weather-buffer only
+when `expected_delay_days > 0`, re-check always), rendered as `<li>` bullets under one `border-t`
+divider with no per-item colour or background. Same information, same conditions for what shows,
+one visual block instead of three differently-styled ones. Removed the now-inaccurate "already
+grouped" comment and replaced it with one that states what the code actually does.
+
+- `verdict-block.tsx`: added `import type { ReactNode }`; the three conditional `<p>` blocks and
+  their surrounding comments are gone, replaced by the `caveatItems` array and one `<ul>` map.
+  No other panel in this file changed.
+
+**Verified**: `tsc -b --noEmit` clean, `npm run build` clean. `npm run lint` (oxlint) shows no new
+warnings — every warning still reported (`use-mobile.ts`, `auth-context.tsx`,
+`alerts-drawer.tsx`, `badge.tsx`, `anchorage-panel.tsx`, `grade.tsx`, `money-context.tsx`,
+`solve-progress.tsx`, `accounts-drawer.tsx`) is pre-existing and in a file this pass did not touch.
+No backend changes, so no `pytest`/`ruff` re-run needed.
+
+## 2026-09-04 (later) — Reviewer pass 6: raw enum names on screen, redundant risk-feed tooltips, unreadable stat rows, and the map's fanned routes missing their own ports
+
+Six items from one review pass, each reproduced against the real running app (both dev servers,
+worked example, real quote) with a Playwright driver before and after, not just read from the diff.
+
+### 1. `BAY_OF_BENGAL` (and the other basin ids) rendered raw in the Risk Feed and the Verdict panel
+
+Reported directly: "why are our code structs leaking into the UI". Root cause:
+`data_builders.build_cyclone_climatology.BASIN_BOUNDS` keys its five basins by the internal
+`SCREAMING_SNAKE_CASE` id it also uses to key the climatology parquet, and two call sites passed
+that id straight through to user-facing text instead of translating it first —
+`opt.risk.cyclone_season_alert` (`RiskAlert.message` and `.subject`, shown in the Risk Feed) and
+`opt.weather_window.transit_buffer` (`TransitBuffer.explanation`, shown in the Verdict panel's
+weather-buffer caveat). `opt.chokepoints.CHOKEPOINT_NAMES` already solves the identical problem for
+chokepoint ids; added the equivalent `BASIN_LABELS` dict next to `BASIN_BOUNDS` and used it at both
+call sites (`.get(basin, basin)`, so an unlabelled future basin degrades to the raw id rather than
+raising). Updated `tests/opt/test_risk.py`'s two `subject == "BAY_OF_BENGAL"` assertions to the new
+`"Bay of Bengal"` — the human label is now the contract, not the internal key.
+
+### 2. Risk Feed: greyed-out subject, a bare-number chip repeating the message, and a `title=` tooltip
+
+Three related complaints on the same row. The category label (`"CHOKEPOINT DISRUPTION"`) and the
+subject (`"MALACCA STRAIT"`) shared one muted-grey span — the part of the line that changes per
+alert, the actual thing at risk, read as decoration. And the metric/threshold chip on the right
+still used a native `title=` attribute — the exact F-76/F-104 gap (never opens on keyboard focus or
+touch) fixed everywhere else on the desk, missed here. Fixed in `risk-feed.tsx`: subject now renders
+`text-foreground` (category stays muted — it's the same four words on every row); the chip's
+tooltip is the shared `<Tooltip>` component, with real content instead of a bare title string. Three
+of the four alert categories (`rate_regime`, `port_congestion`, `chokepoint_disruption`) key their
+metric to a z-score of the series' own history; `cyclone_season` compares a real rate against a
+median multiple instead — a different chip label and tooltip body per kind (`Z_SCORE_CATEGORIES`),
+rather than one generic "metric vs threshold" that meant nothing on sight for either. Added a
+`z-score` entry to `GLOSSARY` (`vocabulary.ts`) for the tooltip body. Also: the category+subject span
+had `truncate`, which — now that subject carries the emphasis — was reliably cutting off the subject
+itself in the narrow three-column layout ("MALACCA ST…"); switched to `flex-wrap` so a long combination
+wraps to a second line instead of hiding the one thing the row is about.
+
+### 3. CII panel / Backhaul panel: "Add a vessel" read as contradicting the verdict headline already shown
+
+Reported: "(in the default example only) haven't we already added a vessel in the input itself?".
+Real confusion, not a false report — `quote.target_vessel_class` (shown large in the Verdict
+headline) is the solver's recommended *class* for this cargo, computed with no real ship behind it;
+CII and Backhaul both need a specific vessel's real speed/fuel-consumption/DWT, supplied separately
+under the quote form's "Vessels in hand" section, which the worked example does not populate. The
+old copy ("Add a vessel to the quote to project its IMO carbon rating") didn't say why a vessel
+class already on screen wasn't enough. Reworded both empty states (`cii-panel.tsx`,
+`backhaul-panel.tsx`) to name the section and state the distinction directly.
+
+### 4. Stat rows: label hard left, value hard right, nothing to guide the eye across the gap
+
+Reported: "when the label is all the way to the left, and the value is all the way to the right...
+your eyes have to do a lot of work". `.stat-row` (`index.css`) is deliberately the desk's one
+value-presentation pattern — used on every panel that shows a single figure — so the fix had to be
+one CSS change, not a per-panel rewrite. Replaced the plain `justify-between` (blank gap, sized by
+whatever the panel's own width happens to be) with the classic invoice/table-of-contents dot leader:
+`.stat-label` becomes its own flex row with a `::after` pseudo-element that grows to fill the space
+up to `.stat-value`, bottom-bordered `1px dotted`. Same "label left, value right" result, but now
+there's a line to trace instead of empty air. Confirmed visually across `verdict-block.tsx` and
+`walk-away-curve.tsx`'s stat rows (Portfolio's was not re-screenshotted, but shares the same CSS
+class with no bespoke markup, so it inherits the same fix).
+
+### 5. The route map's fanned-apart routes visibly missed the port dot they were supposed to end at
+
+Reported: "the lines don't match with the port location, and it's triggering my OCD". Root cause in
+`route-map.tsx`'s `projectedLeg`: when N routes share one leg (e.g. two Supramax routings both using
+the Newcastle-to-Malacca leg), each is offset sideways by a constant `off` in pixel space so the
+parallel lines don't visually merge — `off` was applied uniformly to every point on the leg,
+including its two endpoints, so the line's start/end shifted away from the port marker by the same
+amount as its middle. Fixed by tapering the offset with `sin(pi * t)` (`t` = the point's position
+along the leg, 0 at the first point to 1 at the last, using point index as a proxy for arc-length
+fraction since `route_trace` samples each polyline at even geodesic steps) — zero offset at both real
+endpoints, full offset at the midpoint, so overlapping routes still fan apart to stay legible but
+every line converges exactly on its port dot. Confirmed with a before/after screenshot pair, zoomed
+on both the Paradip and Newcastle AU ends of the worked example's two Supramax routings.
+
+**Verified**: `tsc -b --noEmit` and `npm run build` clean, `npm run lint` shows only the same
+pre-existing warnings as before this pass (none in a touched file). `uv run ruff check src backend`
+clean (one import-order fix applied to `weather_window.py` by `ruff check --fix`, mechanical only).
+`uv run python -m pytest tests/opt tests/data_builders -q` — 651 passed, 1 skipped, 4 pre-existing
+failures in `tests/opt/test_replay.py` (oracle/backtest strategies, unrelated to anything touched
+this pass — same missing-replay-snapshot gap F-96 already flagged as "still owed before a demo," not
+reproduced or investigated further here). Live-verified with both dev servers, the worked example
+and a real quote, driven headlessly via a local Playwright install (no `chromium-cli` available in
+this environment) — screenshots confirm the risk-feed subject/tooltip, the verdict caveat bullets
+and dotted stat rows, both empty-state panels, and the map fan-taper at both port endpoints, with
+zero console errors. Both dev servers were stopped at the end of this pass (not left running — no
+standing request to keep them up this session).
+
+**Not done, and worth saying so**: the review also raised two broader items this pass did not
+attempt — a full desk-wide audit of "remove all unnecessary text, one place only, bulleted" beyond
+the specific instances above, and a review of bento-card ordering across the whole Voyage Desk.
+Both are real, larger asks (every panel's copy and the whole grid's layout) rather than a single
+locatable bug, and doing either well needs its own pass rather than being folded into six unrelated
+fixes.
+
+## 2026-09-04 (later still) — Reviewer pass 6 follow-up: the map fan-taper wasn't the whole bug
+
+Pass 6's map fix (item 5 above) was real but incomplete — reported again against a live screenshot
+showing a single, unshared route (`Supramax x2`, no fan-out in play at all) whose line still started
+visibly away from the Paradip dot. That ruled out the fan-taper code path entirely (`shared <= 1`
+returns the raw projected points, untouched) and pointed at the polyline's own coordinates instead
+of anything pixel-space.
+
+Root cause, in `opt/route_trace.py`'s `_leg`: `searoute.searoute(a, b)` was called without
+`append_orig_dest=True`. Reading the library's own source
+(`searoute/searoute.py:101-123`) shows this isn't a detail — it's the difference between two
+different contracts. By default, searoute snaps the requested origin/destination onto the nearest
+node of its own marine-network graph (`marnet_searoute.geojson`) and returns *that* snapped point as
+the polyline's first/last coordinate, only re-inserting the real requested point when
+`append_orig_dest=True` is passed and the snapped point differs from it. Paradip sits up a coastal
+inlet that isn't exactly on the network graph, so the unmodified default silently substituted a
+nearby-but-different entry point — and since the frontend draws the port marker from the same
+`PORT_COORDS` value `_leg` computed `a`/`b` from in the first place (`route-map.tsx`'s
+`portByCode`/`p.lat`/`p.lon`), the line and the dot were, correctly, drawing two different points
+that happened to look close.
+
+Fixed by adding `append_orig_dest=True` to the one `sr.searoute(...)` call. No other code changed —
+this was a missing keyword argument, not a geometry bug of this codebase's own making.
+
+**Verified**: `tests/opt/test_route_trace.py` — 2 passed (only asserts `len(polyline) >= 2`, so it
+never could have caught this; not strengthened further since the real regression-catcher here is
+visual, not a coordinate-equality assertion `searoute`'s upstream snapping could still legitimately
+change). `uv run python -m pytest tests/opt tests/backend -q` — 707 passed, 1 skipped, same 5
+pre-existing `test_replay.py` failures as pass 6 (one more than previously listed —
+`test_cached_across_repeated_calls` — same root cause, the missing replay-snapshot build artifact;
+not this change, confirmed by the failure being present before this edit too). `ruff check src
+backend` clean. Live-reloaded (`uvicorn --reload` picked up the change automatically, confirmed via
+its own log) and re-verified with the same Playwright screenshot pair as pass 6, zoomed on Paradip:
+the line now touches the port dot exactly at both the shared-route and single-route case. Both dev
+servers left running this time, per request.
+
+## 2026-09-04 (later still) — Map fix round 3: the splice touched the port, but rendered with the same confidence as the real route
+
+Reported again, against a fresh screenshot: the Paradip line was now connected but "still looks not
+right" — a visible kink right at the port, reading as a routing mistake rather than a fix. Right
+call: the previous round made the line *reach* the dot, but it drew the whole thing, splice
+included, as one uniform solid/dashed path — a real 87 nm gap between Paradip's actual coordinate
+and searoute's own nearest resolvable network node, rendered with exactly the same visual confidence
+as the genuinely-routed water beside it. Investigated by pulling the raw polyline directly
+(`opt.route_trace._leg(NEWCASTLE_AU, PARADIP)`) rather than re-guessing from the screenshot: the
+splice is real and it is large — 25.6 nm at the Newcastle end, 87.3 nm at the Paradip end, both
+confirmed by comparing searoute's own unmodified (un-spliced) result against `PORT_COORDS`.
+
+Reworked the fix from round 2 to make that splice explicit instead of implicit:
+
+- `opt/types.py`: `RouteLeg` gets two new fields, `origin_connector_nm` / `dest_connector_nm` — the
+  length (nm) of the straight splice at each end, `0.0` when searoute's own resolved node already
+  coincided with the real port coordinate (no splice needed).
+- `opt/route_trace.py`: `_leg()` no longer relies on searoute's own `append_orig_dest=True` (which
+  inserts the real point but tells the caller nothing about how far it moved it). Calls searoute
+  unmodified, measures the gap between its result and the real `PORT_COORDS` value at each end
+  itself, and only splices in the real coordinate when that gap clears `_CONNECTOR_EPSILON_NM`
+  (0.5 nm, to skip floating-point noise) — so the two new fields are always an honest, direct
+  measurement rather than inferred after the fact.
+- `frontend/src/lib/types.ts`: mirrors both fields on `RouteLeg`.
+- `route-map.tsx`: each leg's projected polyline is now split at render time — the first/last
+  segment is peeled off into its own short sub-path whenever its connector exceeds
+  `CONNECTOR_DISCLOSURE_THRESHOLD_NM` (8 nm), and drawn in the same fine-dot pattern already
+  established for a fully-unresolved (`is_great_circle_fallback`) leg, while the rest of the leg
+  keeps its normal chosen/considered/rejected styling. The hover tooltip gets a matching note
+  ("Fine-dot end is a straight splice to the real port…") distinct from the existing full-fallback
+  note, and the panel's own hint line was reworded (`"straight-line estimate, for the whole hop or
+  just its port-end splice"`) rather than lengthened further.
+
+This is the same house pattern as `is_great_circle_fallback` itself, applied at finer grain: don't
+make a known gap in the geometry disappear, disclose exactly where it is.
+
+**Verified**: `uv run python -c "..."` confirmed `origin_connector_nm=25.6`, `dest_connector_nm=87.3`
+for the real Newcastle→Paradip leg, matching the manual searoute probe from round 2's investigation
+exactly. `uv run python -m pytest tests/opt tests/backend tests/data_builders -q` — 852 passed, 1
+skipped, same 5 pre-existing `test_replay.py` failures as before (unrelated, confirmed present
+before this change too). `uv run ruff check src backend` clean. `tsc -b --noEmit`, `npm run build`,
+`npm run lint` clean (lint warnings unchanged from before this pass, none in a touched file). Backend
+auto-reloaded three times (once per edited `.py` file, confirmed via its own log) with no restart
+needed. Re-verified live: clicked into the Supramax routing on the real running app, screenshotted
+and magnified the Paradip endpoint specifically — the splice now renders as a visibly distinct thin
+dashed stub reaching the port dot, with the real routed path continuing as the normal thick solid
+line beside it. Both dev servers left running.
+
+## 2026-09-04 (later still) — Map fix round 4: the disclosed splice was honest but still visibly kinked; trim the node that caused it
+
+Follow-up question from the same review, on round 3's result: "can't u just connect to the paradip
+directly" — a fair reaction to a screenshot where the line still bent sharply right at the port, now
+correctly touching the dot and honestly dotted, but the bend itself hadn't been explained or
+addressed. Investigated rather than dismissed it as "that's just what the real data looks like":
+computed the actual compass bearings along the tail of the Newcastle→Paradip polyline
+(`_bearing_deg`, a plain initial-bearing formula). searoute's own second-to-last node sits at
+(88.0°E, 21.0°N) — genuinely 87 nm closer to Paradip than the node before it, so it *is* real
+progress by straight-line distance — but it sits due north of Paradip (86.65°E, 20.28°N), so the
+connector from it has to double back south by **83 degrees** to actually land on the port. One node
+earlier, (89.73°E, 18.85°N), the connector's turn is only **23 degrees** — in line with the route's
+own approach direction the whole way up the Bay of Bengal. A node can be closer to the destination
+in absolute distance while still sitting on the wrong side of it; distance alone can't tell that
+apart from a node that's actually in the way, which is exactly what the round-3 fix was still
+missing.
+
+`opt/route_trace.py`: added `_bearing_deg`/`_angle_diff_deg` and a trim loop in `_leg()` that runs
+before the connector distance is measured. At each end, if the straight connector to the real port
+would force a turn sharper than `_CONNECTOR_TURN_THRESHOLD_DEG` (60°) against the path's own last
+real bearing, that trailing node is dropped and the connector is re-measured from the point before
+it — up to `_MAX_CONNECTOR_TRIM` (2) times per end, so a straight splice can only ever replace a
+bounded stretch of the real searoute path, never an unbounded one chasing a perfectly smooth angle.
+For the real Newcastle→Paradip leg this drops one node at each end: the Paradip connector grows from
+87 nm to 194 nm (bearing turn 83°→23°) and the Newcastle connector from 26 nm to 56 nm. Both stay
+correctly disclosed as fine-dot splices (still well past the 8 nm rendering threshold from round 3)
+— trimming the kink out doesn't make the remaining line any more "real" than it was, it just stops
+manufacturing an unnecessary extra bend on top of an already-approximate stretch.
+
+**Verified**: `uv run python -c "..."` against the live Newcastle→Paradip leg — `origin_connector_nm`
+55.9, `dest_connector_nm` 194.2, tail points now end `..., (89.727407, 18.84889), (86.6489, 20.2805)`
+(confirms the (88.0, 21.0) node was dropped). `uv run python -m pytest tests/opt tests/backend
+tests/data_builders -q` — 852 passed, 1 skipped, same 5 pre-existing `test_replay.py` failures as the
+last two rounds. `ruff check src backend` clean. Backend auto-reloaded, confirmed via its own log.
+Re-screenshotted the same focused Supramax view as round 3, magnified on Paradip: the line is now a
+single smooth stroke into the port with only a short dotted stub at the very end, no visible bend.
+
+**On how far this goes**: this is a bounded, generic heuristic (bearing-angle trimming, `_MAX_CONNECTOR_TRIM`
+capped at 2), not a Paradip-specific patch -- it applies to every leg's connector on both ends. It has
+not been visually re-checked against every other port in `PORT_COORDS`, only Newcastle↔Paradip
+(the one reported against). A different port's approach geometry could still produce a milder,
+undisclosed kink if the sharpest available angle after 2 trims is still above what looks clean,
+though it would remain within the 60° threshold and thus not require a third trim to stay
+"acceptable" by this rule's own definition.
+
+## 2026-09-04 (later still) — Map fix round 5: drop the fine-dot disclosure on the connector, keep it solid
+
+Direct follow-up: "now just turn this dotted line into actual line." Round 3 had split each leg's
+polyline so the port-connector splice (round 4's trimmed, now-smooth straight segment) rendered in
+the same fine-dot pattern as a fully-unresolved (`is_great_circle_fallback`) leg, on the reasoning
+that a straight splice shouldn't carry the same visual confidence as the real searoute path it's
+attached to. Now that the splice itself is a smooth, single-direction line (round 4) rather than a
+visible kink, that distinction reads as an unnecessary artifact rather than useful information —
+asked to remove it, and did.
+
+`route-map.tsx`: reverted the leg-splitting from round 3 -- `mainRuns`/`originConnector`/
+`destConnector`/`hasConnector` are gone, each leg is one `<path>` again drawn from the full `runs`
+array with its ordinary chosen/considered/rejected styling, no separate dotted overlay. Removed the
+matching `hasConnector` tooltip note and the `tip` state field it used, and reverted the panel's hint
+line back to its pre-round-3 wording (the "or just its port-end splice" clause no longer applies to
+anything rendered). The now-unused `CONNECTOR_DISCLOSURE_THRESHOLD_NM` constant is deleted.
+
+Deliberately left alone: `opt/types.py`'s `origin_connector_nm`/`dest_connector_nm` fields and the
+bearing-trim logic in `opt/route_trace.py` that computes them (round 4) — the frontend no longer
+visualizes them differently, but the backend still computes and serves them honestly on every leg.
+That's a real, if now-unused-by-this-component, distinction the API keeps making rather than erasing
+the computation entirely; nothing about "draw it solid" implied the underlying gap should stop being
+measured, only that this particular renderer shouldn't call it out.
+
+**Verified**: `tsc -b --noEmit`, `npm run build`, `npm run lint` all clean (lint warnings unchanged,
+none in a touched file). No backend files changed this round, so no `pytest`/`ruff` re-run needed.
+Re-screenshotted the same focused Supramax view as rounds 3-4: the line into Paradip is now a single
+continuous solid stroke with no dash-pattern break anywhere along it. Both dev servers left running.

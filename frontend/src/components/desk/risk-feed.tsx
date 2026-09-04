@@ -1,8 +1,18 @@
 import { ShieldCheck } from 'lucide-react'
 import { Panel } from '@/components/desk/panel'
+import { Tooltip } from '@/components/ui/tooltip'
 import type { RiskAlert, RiskAssessment, RiskSeverity } from '@/lib/types'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
+
+// Every category except cyclone_season keys its metric/threshold to a
+// z-score of the series' own recent history (opt.risk.rate_regime_alert,
+// port_congestion_alert, chokepoint_disruption_alert all call the same
+// `_zscore_of_last` helper). Cyclone season alerts compare a real
+// storms/season-week rate against a multiple of the all-basin median
+// instead -- a ratio, not a z-score -- so the two need different chip
+// labels and tooltip text rather than one generic "metric vs threshold".
+const Z_SCORE_CATEGORIES = new Set(['rate_regime', 'port_congestion', 'chokepoint_disruption'])
 
 const SEVERITY_DOT: Record<RiskSeverity, string> = {
   info: 'bg-primary',
@@ -33,6 +43,7 @@ const SEVERITY_TEXT: Record<RiskSeverity, string> = {
 const MONITORED = ['Rate regime', 'Port congestion', 'Chokepoint transits', 'Cyclone climatology']
 
 function AlertRow({ a }: { a: RiskAlert }) {
+  const isZScore = Z_SCORE_CATEGORIES.has(a.category)
   return (
     <li className="flex gap-2 border-b border-border/70 px-2 py-2 transition-colors last:border-b-0 hover:bg-surface-2">
       <span
@@ -40,8 +51,13 @@ function AlertRow({ a }: { a: RiskAlert }) {
         aria-hidden="true"
       />
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="min-w-0 truncate text-caption font-bold uppercase tracking-wide text-muted-foreground">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+          {/* No `truncate` here: this row used to cut off whichever end of
+              "CATEGORY · SUBJECT" ran out of room in the narrow three-column
+              layout, which was reliably the subject -- the one part of this
+              line that names the actual thing at risk. Wraps to a second
+              line instead of hiding it. */}
+          <span className="min-w-0 text-caption font-bold uppercase tracking-wide">
             <span className={SEVERITY_TEXT[a.severity]}>{SEVERITY_LABEL[a.severity]}</span>
             {/* A rule, not a pipe character: a literal "|" is text as far as a
                 screen reader and a contrast check are concerned (it measured
@@ -51,19 +67,47 @@ function AlertRow({ a }: { a: RiskAlert }) {
               aria-hidden="true"
               className="mx-1.5 inline-block h-2 w-px translate-y-px bg-border"
             />
-            {a.category.replace(/_/g, ' ')} · {a.subject}
+            {/* Category stays muted -- it's the same four words on every row
+                of this panel. Subject does not: it's the one part of this
+                line that changes per alert (which strait, which port, which
+                vessel class) and was reading as decoration when it shared
+                the category's grey. */}
+            <span className="text-muted-foreground">{a.category.replace(/_/g, ' ')}</span>{' '}
+            <span className="text-foreground">{a.subject}</span>
           </span>
-          {/* Was a bare "-2.22 / -1.75" with nothing saying which number was
-              which -- two signed figures separated by a slash read as a range
-              or a fraction before they read as observed-vs-threshold. */}
-          <span
-            className="desk-chip desk-chip-neutral"
-            title={`Observed ${formatNumber(a.metric_value, 2)} against an alert threshold of ${formatNumber(a.threshold, 2)}`}
+          {/* A real tooltip (not native `title`, which never opens on
+              keyboard focus or touch -- the same gap F-76/F-104 fixed
+              elsewhere on the desk) explaining what these two numbers are,
+              since "z" means nothing on sight and the two figures otherwise
+              just repeat what `message` already says in prose below. */}
+          <Tooltip
+            content={
+              isZScore ? (
+                <>
+                  <span className="font-semibold text-foreground">z-score</span>
+                  <span className="mt-1 block">
+                    How far today's value sits from its own recent baseline, in standard
+                    deviations. This alert fires past ±{formatNumber(a.threshold, 2)}.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="font-semibold text-foreground">Rate vs threshold</span>
+                  <span className="mt-1 block">
+                    This basin and week's real storm-strike rate, against the multiple of the
+                    all-basin median that counts as significant risk.
+                  </span>
+                </>
+              )
+            }
           >
-            {formatNumber(a.metric_value, 2)}
-            <span className="font-sans font-normal normal-case text-muted-foreground">vs</span>
-            {formatNumber(a.threshold, 2)}
-          </span>
+            <span className="desk-chip desk-chip-neutral cursor-help">
+              {isZScore && <span className="font-sans font-normal normal-case text-muted-foreground">z </span>}
+              {formatNumber(a.metric_value, 2)}
+              <span className="font-sans font-normal normal-case text-muted-foreground"> vs </span>
+              {formatNumber(a.threshold, 2)}
+            </span>
+          </Tooltip>
         </div>
         <p className="mt-0.5 text-body leading-relaxed text-foreground">{a.message}</p>
       </div>

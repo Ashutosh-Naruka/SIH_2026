@@ -71,8 +71,8 @@ import polars as pl
 import requests
 from pydantic import BaseModel, ConfigDict
 
+from data_builders.build_cyclone_climatology import BASIN_LABELS, basins_for_port
 from data_builders.build_cyclone_climatology import OUT_PATH as CYCLONE_CLIMATOLOGY_PATH
-from data_builders.build_cyclone_climatology import basins_for_port
 from data_builders.provenance import Provenance
 from opt.network import PortEnum
 
@@ -380,7 +380,13 @@ def transit_buffer(
     forecast_window = origin_window or dest_window
     forecast_covers_laycan = forecast_window is not None
 
-    basins_label = ", ".join(basins) if basins else "no tracked cyclone basin"
+    # BASIN_LABELS.get(b, b), not the raw basin: `basins` holds the internal
+    # SCREAMING_SNAKE_CASE keys `basins_for_port` returns, and this label
+    # feeds `explanation`, which is rendered verbatim in the Verdict panel's
+    # weather-buffer note -- the same leak fixed in opt.risk.cyclone_season_alert.
+    basins_label = (
+        ", ".join(BASIN_LABELS.get(b, b) for b in basins) if basins else "no tracked cyclone basin"
+    )
 
     if not forecast_covers_laycan:
         forecast_delay_days = 0.0

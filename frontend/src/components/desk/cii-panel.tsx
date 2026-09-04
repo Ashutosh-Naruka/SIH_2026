@@ -75,7 +75,8 @@ export function CIIPanel({ emissions }: { emissions: VoyageEmissions | null }) {
         hint="IMO Carbon Intensity Indicator projection for each real vessel on this quote's route: attained vs required CII (gCO2/dwt·nm) and the A-E rating those two numbers imply."
       >
         <div className="flex h-full items-center justify-center text-center text-lead text-muted-foreground">
-          Add a vessel to the quote to project its IMO carbon rating.
+          Add a real vessel under "Vessels in hand" to project its IMO carbon rating — the target
+          class above has no real speed or fuel-consumption figures to grade.
         </div>
       </Panel>
     )

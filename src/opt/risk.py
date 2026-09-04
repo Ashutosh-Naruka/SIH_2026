@@ -48,7 +48,7 @@ from typing import Final, Literal
 import numpy as np
 import polars as pl
 
-from data_builders.build_cyclone_climatology import basins_for_port
+from data_builders.build_cyclone_climatology import BASIN_LABELS, basins_for_port
 from opt.chokepoints import CHOKEPOINT_NAMES
 from opt.network import PortEnum
 from opt.types import RiskAlert, RiskAssessment, VesselClass
@@ -354,18 +354,24 @@ def cyclone_season_alert(
         severity = "info"
 
     basin = top["basin"]
+    # BASIN_LABELS.get(...) rather than the raw dict key: `basin` is the
+    # internal SCREAMING_SNAKE_CASE identifier used to key the climatology
+    # parquet and BASIN_BOUNDS, never meant to reach a user directly. Falls
+    # back to the raw key only if a basin is ever added to BASIN_BOUNDS
+    # without a matching label, so this degrades rather than raising.
+    basin_label = BASIN_LABELS.get(basin, basin)
     week_label = str(top["iso_week"]) if len(weeks) == 1 else f"{min(weeks)}-{max(weeks)}"
     return RiskAlert(
         category="cyclone_season",
         severity=severity,
         message=(
-            f"{basin} cyclone climatology: {max_rate:.3f} storms/season-week in ISO week "
+            f"{basin_label} cyclone climatology: {max_rate:.3f} storms/season-week in ISO week "
             f"{week_label} — {max_rate / threshold:.1f}× the {threshold:.3f}/week threshold. "
             "Historical strike rate, not a live storm-track forecast."
         ),
         metric_value=max_rate,
         threshold=threshold,
-        subject=basin,
+        subject=basin_label,
     )
 
 

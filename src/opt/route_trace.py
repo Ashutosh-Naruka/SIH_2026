@@ -30,6 +30,44 @@ __all__ = ["build_route_exploration"]
 #: set is every PortEnum, but the map only needs the contenders.
 _MAX_REPOSITION_ALTERNATES = 6
 
+#: Below this, a gap between a port's real coordinate and wherever searoute
+#: snapped it onto its own marine-network graph is treated as floating-point
+#: noise, not a real splice worth disclosing separately.
+_CONNECTOR_EPSILON_NM = 0.5
+
+#: A straight connector from searoute's last resolved node to the real port
+#: can force a turn sharper than this (degrees, vs. the bearing the real
+#: path was already travelling on) when that node is itself a real step
+#: toward the port but sits on the wrong side of it -- observed for Paradip,
+#: where the network's own second-to-last node sits due north of the port
+#: (a real 87 nm advance in absolute distance) but forces an 83-degree
+#: reversal to actually reach it. Above this threshold the node is dropped
+#: and the connector is measured from the point before it instead, up to
+#: `_MAX_CONNECTOR_TRIM` times -- for Paradip, one trim brings the turn down
+#: to 23 degrees, in line with the route's own approach direction.
+_CONNECTOR_TURN_THRESHOLD_DEG = 60.0
+
+#: How many trailing/leading real nodes a connector is allowed to drop
+#: chasing a gentler angle before giving up and accepting the sharper turn.
+#: Bounds how much of searoute's own real path a straight splice can end up
+#: replacing.
+_MAX_CONNECTOR_TRIM = 2
+
+
+def _bearing_deg(a: tuple[float, float], b: tuple[float, float]) -> float:
+    """Initial compass bearing (0-360, 0 = north) from `a` to `b`."""
+    lon1, lat1, lon2, lat2 = map(math.radians, (a[0], a[1], b[0], b[1]))
+    dlon = lon2 - lon1
+    y = math.sin(dlon) * math.cos(lat2)
+    x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dlon)
+    return math.degrees(math.atan2(y, x)) % 360.0
+
+
+def _angle_diff_deg(b1: float, b2: float) -> float:
+    """Smallest angle (0-180) between two compass bearings."""
+    d = abs(b1 - b2) % 360.0
+    return min(d, 360.0 - d)
+
 
 def _lonlat(port: PortEnum) -> tuple[float, float]:
     """(lon, lat) for a port, from the same coordinate table the sea-distance
@@ -75,17 +113,79 @@ def _leg(from_id: str, to_id: str) -> RouteLeg:
 
     polyline: tuple[tuple[float, float], ...]
     fallback = False
+    origin_connector_nm = 0.0
+    dest_connector_nm = 0.0
     try:
         import searoute as sr
 
+        # searoute snaps `a`/`b` onto the nearest node of its own
+        # marine-network graph and returns that snapped node, not `a`/`b`
+        # themselves -- for a port that isn't exactly on the graph (a
+        # river/bay port off the main shipping lanes, e.g. Paradip), that
+        # snapped node can sit a real distance from the port's actual
+        # coordinate. The frontend draws this polyline's endpoint and the
+        # port marker from the same PORT_COORDS value (`_lonlat` above and
+        # the port listing both read it), so an unspliced gap here is a gap
+        # on the map between the route line and the port dot it's meant to
+        # terminate at -- reported directly as "the lines don't match with
+        # the port location."
+        #
+        # Spliced on manually below rather than via searoute's own
+        # `append_orig_dest=True` so the splice distance is known explicitly
+        # (`origin_connector_nm`/`dest_connector_nm`) instead of just
+        # inserted silently: a renderer needs to know which stretch of the
+        # polyline is a real routed path and which is this straight-line
+        # splice, or it draws both with the same confidence -- which is
+        # exactly what made the *first* fix of this bug still look wrong:
+        # the line now touched the port, but the splice (87 nm of open water
+        # for Paradip, in one real case) rendered identically to the actual
+        # searoute path and read as a routing mistake rather than a
+        # disclosed approximation.
         feat = sr.searoute(list(a), list(b))
-        coords = feat["geometry"]["coordinates"]
-        polyline = tuple((float(x), float(y)) for x, y in coords)
-        if len(polyline) < 2:
+        raw_coords = [(float(x), float(y)) for x, y in feat["geometry"]["coordinates"]]
+        if len(raw_coords) < 2:
             raise ValueError("degenerate searoute result")
+        coords = list(raw_coords)
+
+        # Drop trailing real nodes the connector would otherwise have to
+        # double back on sharply (see _CONNECTOR_TURN_THRESHOLD_DEG) -- a
+        # node can be a genuine step closer to the port in absolute distance
+        # while still sitting on the wrong side of it, which a plain
+        # nearest-point splice can't tell apart from a node that's actually
+        # in the way.
+        dest_trims = 0
+        while len(coords) >= 3 and dest_trims < _MAX_CONNECTOR_TRIM:
+            incoming = _bearing_deg(coords[-2], coords[-1])
+            connector = _bearing_deg(coords[-1], b)
+            if _angle_diff_deg(incoming, connector) <= _CONNECTOR_TURN_THRESHOLD_DEG:
+                break
+            coords.pop()
+            dest_trims += 1
+        origin_trims = 0
+        while len(coords) >= 3 and origin_trims < _MAX_CONNECTOR_TRIM:
+            outgoing = _bearing_deg(coords[0], coords[1])
+            connector = _bearing_deg(a, coords[0])
+            if _angle_diff_deg(outgoing, connector) <= _CONNECTOR_TURN_THRESHOLD_DEG:
+                break
+            coords.pop(0)
+            origin_trims += 1
+
+        origin_connector_nm = _rough_nm(a, coords[0])
+        dest_connector_nm = _rough_nm(coords[-1], b)
+        if origin_connector_nm > _CONNECTOR_EPSILON_NM:
+            coords.insert(0, a)
+        else:
+            origin_connector_nm = 0.0
+        if dest_connector_nm > _CONNECTOR_EPSILON_NM:
+            coords.append(b)
+        else:
+            dest_connector_nm = 0.0
+        polyline = tuple(coords)
     except Exception:  # noqa: BLE001 -- searoute raises assorted errors offline / for odd pairs; any failure just means fall back to a great circle
         polyline = _great_circle_polyline(a, b)
         fallback = True
+        origin_connector_nm = 0.0
+        dest_connector_nm = 0.0
 
     try:
         dist = geo_distance_nm(from_id, to_id)
@@ -98,6 +198,8 @@ def _leg(from_id: str, to_id: str) -> RouteLeg:
         to_port=to_port,
         distance_nm=dist,
         is_great_circle_fallback=fallback,
+        origin_connector_nm=origin_connector_nm,
+        dest_connector_nm=dest_connector_nm,
         polyline=polyline,
     )
 

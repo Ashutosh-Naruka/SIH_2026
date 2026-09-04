@@ -259,6 +259,14 @@ export interface RouteLeg {
   to_port: PortCode
   distance_nm: number
   is_great_circle_fallback: boolean
+  // Length (nm) of the straight splice opt.route_trace adds between a real
+  // port coordinate and wherever searoute's marine-network graph actually
+  // resolved to -- 0 when the resolved node already coincided with the port.
+  // Non-zero on either end means the corresponding stretch of `polyline` is
+  // not a real routed path, same honesty gap as `is_great_circle_fallback`
+  // but confined to one end of an otherwise-real leg.
+  origin_connector_nm: number
+  dest_connector_nm: number
   polyline: [number, number][] // [lon, lat]
 }
 

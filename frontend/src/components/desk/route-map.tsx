@@ -396,7 +396,30 @@ export function RouteMap({
       const nx = -(last[1] - first[1]) / len
       const ny = (last[0] - first[0]) / len
       const off = (idx - (shared - 1) / 2) * 7
-      return runs.map((run) => run.map(([x, y]) => [x + nx * off, y + ny * off] as XY))
+      // Taper the offset to zero at the leg's two real endpoints (port
+      // markers) and to full strength in the middle, rather than shifting
+      // every point -- endpoints included -- sideways by the same constant
+      // amount. A uniform offset fans parallel routes apart in the middle,
+      // which is the point, but it also drags each line's start/end away
+      // from the port dot it's supposed to terminate at, which is what
+      // reads as the line "not matching" the port. `sin(pi*t)` is 0 at
+      // t=0 and t=1 (both true endpoints, even when the leg is split into
+      // several `runs` by the globe's limb) and peaks at t=0.5, so the fan
+      // still separates overlapping legs at the midpoint while every leg
+      // converges exactly on its real endpoint. `t` uses point index rather
+      // than true arc length -- route_trace samples each polyline at even
+      // steps along the geodesic, so index fraction already tracks arc
+      // length fraction closely enough for a pixel-space visual offset.
+      const totalPoints = runs.reduce((n, run) => n + run.length, 0)
+      let seen = 0
+      return runs.map((run) =>
+        run.map(([x, y]) => {
+          const t = totalPoints > 1 ? seen / (totalPoints - 1) : 0
+          seen += 1
+          const w = Math.sin(Math.PI * t)
+          return [x + nx * off * w, y + ny * off * w] as XY
+        }),
+      )
     },
     [projection, legSlots],
   )
@@ -656,65 +679,67 @@ export function RouteMap({
                   // across land); a distinct fine-dot pattern marks it
                   // honestly as a straight-line approximation.
                   const isFallback = leg.is_great_circle_fallback
+
                   return (
-                    <motion.path
-                      key={li}
-                      d={pathD(runs)}
-                      fill="none"
-                      stroke={stroke}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeDasharray={
-                        isFocus
-                          ? '10 8'
-                          : isFallback
-                            ? '1.5 3.5'
-                            : isRejected
-                              ? '1 4'
-                              : isChosen
-                                ? undefined
-                                : '7 5'
-                      }
-                      initial={false}
-                      animate={{
-                        strokeWidth: isHover || isFocus ? baseW + 1.5 : baseW,
-                        strokeOpacity: dimmed ? 0.12 : isRejected ? 0.55 : isFallback ? 0.7 : 1,
-                        strokeDashoffset: isFocus ? [18, 0] : 0,
-                      }}
-                      transition={{
-                        strokeWidth: { duration: 0.18 },
-                        strokeOpacity: { duration: 0.18 },
-                        strokeDashoffset: isFocus
-                          ? { repeat: Infinity, duration: 0.9, ease: 'linear' }
-                          : { duration: 0 },
-                      }}
-                      style={{ cursor: 'pointer' }}
-                      onMouseEnter={(e) => {
-                        setHoverId(route.id)
-                        setTip({
-                          route,
-                          x: e.nativeEvent.offsetX,
-                          y: e.nativeEvent.offsetY,
-                          fallback: isFallback,
-                        })
-                      }}
-                      onMouseMove={(e) =>
-                        setTip({
-                          route,
-                          x: e.nativeEvent.offsetX,
-                          y: e.nativeEvent.offsetY,
-                          fallback: isFallback,
-                        })
-                      }
-                      onMouseLeave={() => {
-                        setHoverId(null)
-                        setTip(null)
-                      }}
-                      onClick={() => {
-                        setUserControlled(false)
-                        onFocus(focusId === route.id ? null : route.id)
-                      }}
-                    />
+                    <g key={li}>
+                      <motion.path
+                        d={pathD(runs)}
+                        fill="none"
+                        stroke={stroke}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeDasharray={
+                          isFocus
+                            ? '10 8'
+                            : isFallback
+                              ? '1.5 3.5'
+                              : isRejected
+                                ? '1 4'
+                                : isChosen
+                                  ? undefined
+                                  : '7 5'
+                        }
+                        initial={false}
+                        animate={{
+                          strokeWidth: isHover || isFocus ? baseW + 1.5 : baseW,
+                          strokeOpacity: dimmed ? 0.12 : isRejected ? 0.55 : isFallback ? 0.7 : 1,
+                          strokeDashoffset: isFocus ? [18, 0] : 0,
+                        }}
+                        transition={{
+                          strokeWidth: { duration: 0.18 },
+                          strokeOpacity: { duration: 0.18 },
+                          strokeDashoffset: isFocus
+                            ? { repeat: Infinity, duration: 0.9, ease: 'linear' }
+                            : { duration: 0 },
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        onMouseEnter={(e) => {
+                          setHoverId(route.id)
+                          setTip({
+                            route,
+                            x: e.nativeEvent.offsetX,
+                            y: e.nativeEvent.offsetY,
+                            fallback: isFallback,
+                          })
+                        }}
+                        onMouseMove={(e) =>
+                          setTip({
+                            route,
+                            x: e.nativeEvent.offsetX,
+                            y: e.nativeEvent.offsetY,
+                            fallback: isFallback,
+                          })
+                        }
+                        onMouseLeave={() => {
+                          setHoverId(null)
+                          setTip(null)
+                        }}
+                        onClick={() => {
+                          setUserControlled(false)
+                          onFocus(focusId === route.id ? null : route.id)
+                        }}
+                      />
+                    </g>
                   )
                 })}
               </g>
