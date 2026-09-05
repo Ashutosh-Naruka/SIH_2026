@@ -35,7 +35,6 @@ import type {
   ProgressStage,
   QuoteEnvelope,
   QuoteRequest,
-  QuoteResult,
   VesselInput,
 } from '@/lib/types'
 
@@ -60,6 +59,10 @@ interface VoyageDeskPageProps {
   /** P6: the vessel(s) actually supplied on this quote, for a real backhaul
    * sweep -- QuoteResult never echoes full vessel specs back. */
   vessels: VesselInput[]
+  /** The request currently being solved, or the last one submitted. Only used
+   *  to describe the cargo in the CARGO band's folded state during the FIRST
+   *  solve, when no QuoteResult exists yet to read it off. */
+  lastRequest: QuoteRequest | null
 }
 
 /** A slot on the desk grid with no panel to put in it. Matches Panel's own
@@ -84,21 +87,38 @@ function EmptyPanel({ label, hint }: { label: string; hint?: string }) {
  * has since half-typed into a reopened form.
  */
 function CargoSummary({
-  quote,
+  cargo,
   ports,
   vessels,
+  vesselClass,
+  solving,
 }: {
-  quote: QuoteResult
+  /** The common shape of a QuoteRequest and a QuoteResult. Taking the fields
+   *  rather than one of the two types lets this describe a cargo that is
+   *  still being solved, which has no result to read off yet. */
+  cargo: {
+    cargo_volume_dwt: number
+    commodity: string
+    origin_port: string
+    dest_port: string
+    laycan_start: string
+    laycan_end: string
+    contract_term_days: number
+    as_of?: string | null
+  }
   ports: PortListing[]
   vessels: VesselInput[]
+  /** Only a solved quote knows which class the optimizer picked. */
+  vesselClass?: string | null
+  solving?: boolean
 }) {
   const portName = (c: string) => prettyPort(ports.find((p) => p.code === c)?.name ?? c)
   const bits = [
-    `${formatNumber(quote.cargo_volume_dwt)} t ${quote.commodity}`,
-    `${portName(quote.origin_port)} → ${portName(quote.dest_port)}`,
-    `laycan ${formatIsoShort(quote.laycan_start)} to ${formatIsoShort(quote.laycan_end)}`,
-    `${quote.contract_term_days}d term`,
-    quote.target_vessel_class,
+    `${formatNumber(cargo.cargo_volume_dwt)} t ${cargo.commodity}`,
+    `${portName(cargo.origin_port)} → ${portName(cargo.dest_port)}`,
+    `laycan ${formatIsoShort(cargo.laycan_start)} to ${formatIsoShort(cargo.laycan_end)}`,
+    `${cargo.contract_term_days}d term`,
+    vesselClass ?? null,
     vessels.length > 0 ? `${vessels.length} vessel${vessels.length === 1 ? '' : 's'} in hand` : null,
   ].filter((b): b is string => b !== null)
 
@@ -115,7 +135,7 @@ function CargoSummary({
         </span>
       ))}
       <span className="ml-auto text-micro uppercase tracking-wide text-muted-foreground">
-        priced {formatIsoShort(quote.as_of)}
+        {solving ? 'pricing now' : cargo.as_of ? `priced ${formatIsoShort(cargo.as_of)}` : 'priced'}
       </span>
     </div>
   )
@@ -162,6 +182,7 @@ export function VoyageDeskPage({
   onSubmit,
   quoteFormFocus,
   vessels,
+  lastRequest,
 }: VoyageDeskPageProps) {
   const [mapFocus, setMapFocus] = useState<string | null>(null)
   // The one artefact designed to leave the screen. See decision-brief.tsx.
@@ -225,6 +246,17 @@ export function VoyageDeskPage({
     if (quoteFormFocus) setCargoOpen(true)
   }, [quoteFormFocus])
 
+  /*
+   * Is the CARGO band showing its one-line summary rather than the form?
+   *
+   * Folded whenever the reader has asked a question and is looking at the
+   * answer to it -- during a solve, and after one lands -- and open otherwise.
+   * The `lastRequest` guard matters: on a cold start with nothing submitted
+   * there is no summary to fold to, and folding would hide the form behind
+   * nothing.
+   */
+  const foldedCargo = !cargoOpen && (quote != null || (solving && lastRequest != null))
+
   const alerts = quote?.risk_assessment?.alerts ?? []
   const criticalCount = alerts.filter((a) => a.severity === 'critical').length
   const anchoragePort = quote ? anchoragePortForQuotePort(quote.dest_port) : null
@@ -254,17 +286,46 @@ export function VoyageDeskPage({
     >
       <CollapsibleBand
         label="Cargo"
-        meta={quote && !cargoOpen ? 'priced' : 'what to price'}
-        // Before the first quote there is no summary to fold to, so the band
-        // stays open and offers no toggle -- a control whose only effect
-        // would be to hide the form behind nothing.
-        open={cargoOpen || !quote}
-        canToggle={quote != null}
+        meta={foldedCargo ? (solving ? 'solving' : 'priced') : 'what to price'}
+        /*
+         * Folds while solving, not only once a result exists.
+         *
+         * This used to be `cargoOpen || !quote`, which forced the band open
+         * for the whole of the FIRST solve: there was no quote yet, so the
+         * form -- 788px with a couple of vessels on it, taller than a laptop
+         * viewport -- stayed at full height and pushed the progress list off
+         * the bottom of the screen. Scrolling could not rescue it either,
+         * because with only the form and the progress list on the page there
+         * is not enough content below to scroll the list up to the top. Every
+         * later run looked correct purely because a quote existed by then and
+         * the form folded. Reported as "the solving list is at the bottom on
+         * the first run, but fine after that", which is exactly that shape.
+         *
+         * A solve in flight is reason enough to fold, and `foldedCargo` below
+         * says what it folds TO in that state: the request being priced.
+         */
+        open={!foldedCargo}
+        /* There has to be a way back while it is folded. Without a quote and
+         * without a solve there is nothing to fold to, so no toggle then. */
+        canToggle={quote != null || solving}
         onToggle={() => setCargoOpen((v) => !v)}
         openLabel="Hide"
         closedLabel="Edit"
         summary={
-          quote ? <CargoSummary quote={quote} ports={ports} vessels={vessels} /> : undefined
+          quote ? (
+            <CargoSummary
+              cargo={quote}
+              ports={ports}
+              vessels={vessels}
+              vesselClass={quote.target_vessel_class}
+            />
+          ) : lastRequest ? (
+            /* First solve: no result to describe yet, so describe the request
+               that is being solved. No vessel class -- the optimizer has not
+               chosen one yet, and printing the requested one would be stating
+               an answer the desk does not have. */
+            <CargoSummary cargo={lastRequest} ports={ports} vessels={vessels} solving />
+          ) : undefined
         }
       >
         <QuoteForm

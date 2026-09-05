@@ -374,6 +374,7 @@ function Shell() {
               onSubmit={handleSubmit}
               quoteFormFocus={quoteFormFocus}
               vessels={lastVessels}
+              lastRequest={lastRequest}
             />
           )}
           </Suspense>

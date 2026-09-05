@@ -4885,3 +4885,55 @@ in the DECISION band instead.
 Verified: `tsc`, `npm run build`, `npm run lint` clean (0 errors). Re-checked
 live in headless Chrome against both servers: no figure now appears in both
 the DECISION band and the RESULTS strip.
+
+## 2026-09-05 (later still) — Round 7b: the solving list was off-screen on the first run only
+
+Reported by a teammate: on a fresh page, add a couple of vessels (or press Load
+worked example) and press Run quote, and the solving progress list is at the
+bottom of the screen. Every run after that is fine, with the form folding away
+and the progress list appearing near the top.
+
+The "first run only" shape names the cause exactly. The CARGO band's open state
+was `cargoOpen || !quote`. On the first run there is no quote yet, so `!quote`
+forced the band open for the whole solve regardless of the `setCargoOpen(false)`
+that the submit handler had already run. The form stays at full height (788px
+with two vessels, against a 760px laptop viewport) and pushes the SOLVING band
+below the fold. The scroll-into-view cannot rescue it either: with only the form
+and the progress list on the page there is not enough content below the target
+to scroll it up to the top, so the container hits its maximum scrollTop with the
+list still most of the way down. Every later run looked right purely because a
+quote existed by then and the form folded.
+
+Measured live in headless Chrome at 1500x760, first run, worked example loaded:
+
+    before   progress panel top = 907px in a 760px viewport   (fully off-screen)
+    after    progress panel top = 148px, centre 268px          (35% down, visible)
+
+The fix is that a solve in flight is reason enough to fold, not just a finished
+one. `foldedCargo` is now `!cargoOpen && (quote != null || (solving &&
+lastRequest != null))`, and the band's toggle stays available while solving so
+there is a way back. The `lastRequest` guard matters: on a cold start with
+nothing submitted there is still no summary to fold to, and folding would hide
+the form behind nothing.
+
+Folding during the first solve needs something to fold TO, and no QuoteResult
+exists yet, so `App` now passes `lastRequest` (which it already tracked for the
+deep link) down to the page and `CargoSummary` takes the fields common to a
+request and a result rather than a `QuoteResult`. During the first solve it
+describes the cargo being priced and says "pricing now" instead of a priced
+date. It deliberately shows no vessel class in that state: the optimizer has not
+chosen one yet, and printing the requested one would state an answer the desk
+does not have.
+
+Verified: tsc, npm run build, npm run lint all clean (0 errors). The before/after
+measurement above was taken by reverting the two files to their committed state,
+measuring, and restoring from a backup taken first. Regression-checked after
+restoring: the full reported flow still passes (form 788px, reader scrolls to
+217px to reach Run quote, scrollTop returns to 8px, form folds, DECISION lands
+at y=90, and reopening the band returns all vessel fields and the volume as
+typed), and all seven screens mount with zero console errors.
+
+One false alarm worth recording: a first pass of the all-screens check showed
+tonnage-field and fragility rendering Port Twin's content. That was the test's
+own 2.2s wait being too short for those lazily-loaded route chunks, not a
+regression -- both render correctly at a 6s wait.
