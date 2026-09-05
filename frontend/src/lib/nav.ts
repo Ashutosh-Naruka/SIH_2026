@@ -92,13 +92,21 @@ export function navLabel(view: DeskView): string {
  * These are anchors into one page. They belong to that page and to no other,
  * which is why the rail that shows them is mounted only when the Voyage Desk
  * is on screen and only once a quote has produced the panels to jump to --
- * a link to `#forecast` from the Ledger, or from an unpriced desk, has nothing
+ * a link to `#decision` from the Ledger, or from an unpriced desk, has nothing
  * to scroll to and should not be offered.
+ *
+ * These are now the desk's BANDS, not individual panels. The previous list
+ * (Forecast/Fleet/Ports/Risk/Map) named five panels directly, and four of
+ * those now live inside the Evidence band's tabs -- an element inside an
+ * unselected tab is display:none, so scrollIntoView on it lands nowhere and
+ * the IntersectionObserver that drives the "you are here" highlight never
+ * sees it. Bands are always rendered whenever a quote exists, which is the
+ * property a scroll target has to have.
  */
 export const DESK_SECTIONS: readonly { id: string; label: string }[] = [
-  { id: 'forecast', label: 'Forecast' },
-  { id: 'fleet', label: 'Fleet' },
-  { id: 'ports', label: 'Ports' },
-  { id: 'risk', label: 'Risk' },
-  { id: 'map', label: 'Map' },
+  { id: 'decision', label: 'Decision' },
+  { id: 'results', label: 'Results' },
+  { id: 'evidence', label: 'Evidence' },
+  { id: 'route', label: 'Route' },
+  { id: 'remarks', label: 'Remarks' },
 ]

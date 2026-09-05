@@ -1,11 +1,8 @@
-import { FileText } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
-import { CopyLinkButton } from '@/components/desk/copy-link-button'
 import { Figure } from '@/components/desk/figure'
-import { Button } from '@/components/ui/button'
-import { addDays, formatShortDate, prettyPort } from '@/lib/format'
+import { addDays, formatShortDate } from '@/lib/format'
 import { transition } from '@/lib/motion'
-import type { PortListing, QuoteResult } from '@/lib/types'
+import type { QuoteResult } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { useMoney } from '@/lib/money-context'
 
@@ -31,27 +28,26 @@ import { useMoney } from '@/lib/money-context'
  * breadcrumb they already share a baseline with is a full row of vertical
  * space this desk does not have to spend.
  */
-export function DecisionHeadline({
-  quote,
-  ports,
-  onOpenBrief,
-}: {
-  quote: QuoteResult
-  ports: PortListing[]
-  /** Opens the one-page brief overlay. Owned by the page (it renders
-   *  <DecisionBrief> alongside this component), not by this component. */
-  onOpenBrief: () => void
-}) {
+export function DecisionHeadline({ quote }: { quote: QuoteResult }) {
   const reduced = useReducedMotion()
   const { money } = useMoney()
   const isLock = quote.lock_action === 'LOCK'
-  const portName = (c: string) => prettyPort(ports.find((p) => p.code === c)?.name ?? c)
+  // The whole-term commitment, the same product the Why tab's table shows on
+  // its "Lock today" row -- today's rate across the contract term.
+  const lockTerm = quote.today_quote_usd_per_day * quote.contract_term_days
+  const optionValue = quote.full_recommendation.stopping_result?.option_value_usd_per_day ?? null
 
   const gap = Math.abs(quote.today_quote_usd_per_day - quote.ceiling_usd_per_day)
   const start = quote.optimal_entry_window_start_day
   const end = quote.optimal_entry_window_end_day
   const hasWindow = start != null && end != null
 
+  // No card border, radius or shadow on the section below: it sits inside the
+  // DECISION band, whose gutter label already frames it, and a second frame
+  // made the desk read as boxes inside boxes -- the thing the band layout
+  // exists to stop. The verdict-coloured wash and the left accent bar stay:
+  // those are what make a LOCK and a WAIT distinguishable across the room,
+  // and they cost no extra structure.
   return (
     <motion.section
       aria-label="Decision"
@@ -59,9 +55,8 @@ export function DecisionHeadline({
       animate={{ opacity: 1, y: 0 }}
       transition={reduced ? { duration: 0 } : transition.base}
       className={cn(
-        'relative overflow-hidden rounded-lg border bg-surface px-4 py-3 shadow-panel',
-        'ring-1 ring-inset ring-(--panel-edge)',
-        isLock ? 'border-go/35' : 'border-wait/35',
+        'relative overflow-hidden rounded-sm border-l-2 px-3 py-2',
+        isLock ? 'border-go' : 'border-wait',
       )}
     >
       {/* A wash in the verdict's own colour, so the strip is identifiable
@@ -76,27 +71,7 @@ export function DecisionHeadline({
         )}
       />
 
-      {/* Route/vessel breadcrumb and the two "forward this" actions share a
-          row -- one baseline, not a whole row each. */}
-      <div className="relative flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <div className="text-micro font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          {portName(quote.origin_port)} → {portName(quote.dest_port)} ·{' '}
-          {quote.target_vessel_class}
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          {/* A link reproduces the decision live and re-prices it, where the
-              brief freezes it as of now. Both belong on the verdict --
-              the moment someone has an answer is the moment they need to
-              forward it to whoever approves it. */}
-          <CopyLinkButton />
-          <Button size="sm" onClick={onOpenBrief}>
-            <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-            One-page brief
-          </Button>
-        </div>
-      </div>
-
-      <div className="relative mt-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+      <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <div className="min-w-0 flex-1">
           <h1 className="text-figure font-semibold leading-snug text-foreground">
             {isLock ? (
@@ -124,28 +99,44 @@ export function DecisionHeadline({
           </h1>
         </div>
 
-        {/* The two figures that carry the decision, at display size. */}
+        {/*
+          These two are here because they are NOT anywhere else on the page.
+          This slot used to hold the walk-away line, the expected edge and the
+          confidence, all three of which the RESULTS strip prints in full about
+          eighty pixels further down -- the same figure twice, close enough to
+          be read in one glance, which teaches the reader that the desk repeats
+          itself and that neither copy is worth trusting as the definitive one.
+          RESULTS is the right home for those: it is the row whose whole job is
+          "every number that decides this".
+
+          What is left is the size of the commitment being decided (the total
+          cost over the term, which no other band states) and, when the solver
+          found one, the option value that is the actual reason a WAIT verdict
+          can disagree with a naive rate comparison.
+
+          Deliberately NOT promoted here: the lock-vs-wait "cost over term"
+          table from the Why tab. On this very quote it reads $632.7K to lock
+          against $643.1K to wait -- waiting costs MORE -- while the verdict
+          says wait, because the option value more than covers the difference.
+          That pair contradicts itself unless the option-value caveat sits
+          directly beside it, which is exactly the F-06 failure (a caption
+          keyed off the fused verdict rather than the number it described).
+          The table stays in the Why tab with its caveats attached.
+        */}
         <div className="flex shrink-0 items-start gap-6">
           <Stat
-            label="Walk-away line"
-            value={<Figure value={quote.ceiling_usd_per_day} kind="usd" />}
-            sub="per day"
+            label="If you fix today"
+            value={<Figure value={lockTerm} kind="usdCompact" />}
+            sub={`${quote.contract_term_days} days at ${money(quote.today_quote_usd_per_day)}/day`}
           />
-          <Stat
-            label={quote.expected_savings_usd_total > 0 ? 'Expected edge' : 'Expected cost'}
-            value={
-              <Figure value={Math.abs(quote.expected_savings_usd_total)} kind="usd" />
-            }
-            sub={`over ${quote.contract_term_days} days`}
-            tone={quote.expected_savings_usd_total > 0 ? 'go' : 'risk'}
-          />
-          <Stat
-            label="Confidence"
-            value={
-              <Figure value={quote.prob_savings_positive} kind="percent" digits={0} />
-            }
-            sub="locking beats spot"
-          />
+          {optionValue != null && optionValue > 0 && (
+            <Stat
+              label="Value of waiting"
+              value={<Figure value={optionValue} kind="usd" />}
+              sub="per day, priced in"
+              tone={isLock ? undefined : 'go'}
+            />
+          )}
         </div>
       </div>
     </motion.section>

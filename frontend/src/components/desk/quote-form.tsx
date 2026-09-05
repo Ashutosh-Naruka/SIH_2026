@@ -16,6 +16,13 @@ interface QuoteFormProps {
   /** Focus and scroll here on mount when a caller (the top bar's New Quote
    *  button, from another screen) asks to be brought back to this form. */
   focusToken?: number
+  /** Render the fields alone, with no Panel border/header around them.
+   *
+   *  The desk now puts this form inside a labelled band whose gutter already
+   *  says CARGO, so the Panel's own border and "New Charter Quote" header
+   *  would be a second frame and a second title around the same fields. Off
+   *  by default, so any other caller keeps the standalone card. */
+  chromeless?: boolean
 }
 
 const VESSEL_CLASSES: VesselClass[] = ['Capesize', 'Panamax', 'Supramax', 'Handysize']
@@ -118,6 +125,7 @@ export function QuoteForm({
   submitting,
   onSubmit,
   focusToken,
+  chromeless = false,
 }: QuoteFormProps) {
   const addDaysIso = (iso: string, days: number) =>
     new Date(new Date(`${iso}T00:00:00Z`).getTime() + days * 86_400_000)
@@ -294,315 +302,317 @@ export function QuoteForm({
     })
   }
 
-  return (
-    <div ref={formRef} id="quote-form">
-      <Panel title="New Charter Quote">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-            <Field label="Cargo volume (tonnes)">
-              <input
-                ref={firstFieldRef}
-                type="number"
-                min={1}
-                required
-                value={cargoVolume}
-                onChange={(e) => setCargoVolume(e.target.value)}
-                className={cn(inputCls, 'font-mono')}
-              />
-            </Field>
-            <Field label="Cargo type">
-              <Combobox
-                value={commodity}
-                onChange={setCommodity}
-                options={COMMODITIES}
-                allowFreeText
-                placeholder="Type or pick…"
-              />
-            </Field>
-            <Field label="Origin port">
-              <Combobox
-                value={originPort}
-                onChange={setOriginPort}
-                options={portOptions}
-                placeholder={portsError ? 'Ports unavailable' : 'Search ports…'}
-                disabled={portOptions.length === 0}
-              />
-            </Field>
-            <Field label="Destination port">
-              <Combobox
-                value={destPort}
-                onChange={setDestPort}
-                options={portOptions}
-                placeholder={portsError ? 'Ports unavailable' : 'Search ports…'}
-                disabled={portOptions.length === 0}
-              />
-            </Field>
+  const body = (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        <Field label="Cargo volume (tonnes)">
+          <input
+            ref={firstFieldRef}
+            type="number"
+            min={1}
+            required
+            value={cargoVolume}
+            onChange={(e) => setCargoVolume(e.target.value)}
+            className={cn(inputCls, 'font-mono')}
+          />
+        </Field>
+        <Field label="Cargo type">
+          <Combobox
+            value={commodity}
+            onChange={setCommodity}
+            options={COMMODITIES}
+            allowFreeText
+            placeholder="Type or pick…"
+          />
+        </Field>
+        <Field label="Origin port">
+          <Combobox
+            value={originPort}
+            onChange={setOriginPort}
+            options={portOptions}
+            placeholder={portsError ? 'Ports unavailable' : 'Search ports…'}
+            disabled={portOptions.length === 0}
+          />
+        </Field>
+        <Field label="Destination port">
+          <Combobox
+            value={destPort}
+            onChange={setDestPort}
+            options={portOptions}
+            placeholder={portsError ? 'Ports unavailable' : 'Search ports…'}
+            disabled={portOptions.length === 0}
+          />
+        </Field>
 
-            <Field
-              label="Price as of"
-              hint={
-                latestDate ? `Real data runs through ${latestDate}.` : undefined
-              }
-            >
-              <input
-                type="date"
-                value={asOf}
-                max={latestDate ?? undefined}
-                onChange={(e) => {
-                  const v = e.target.value
-                  // Belt-and-braces: `max` stops the picker UI, but a
-                  // typed/pasted value can still slip past it in some
-                  // browsers -- clamp here too so this field can never hold
-                  // a date the backend has no data for.
-                  setAsOf(latestDate && v > latestDate ? latestDate : v)
-                }}
-                className={cn(inputCls, 'font-mono')}
-              />
-            </Field>
-            <Field label="Contract term (days)">
-              <input
-                type="number"
-                min={1}
-                required
-                value={contractTermDays}
-                onChange={(e) => setContractTermDays(e.target.value)}
-                className={cn(inputCls, 'font-mono')}
-              />
-            </Field>
-            <Field label="Laycan start">
-              <input
-                type="date"
-                required
-                value={laycanStart}
-                onChange={(e) => setLaycanStart(e.target.value)}
-                className={cn(inputCls, 'font-mono')}
-              />
-            </Field>
-            <Field label="Laycan end">
-              <input
-                type="date"
-                required
-                min={laycanStart}
-                value={laycanEnd}
-                onChange={(e) => setLaycanEnd(e.target.value)}
-                className={cn(inputCls, 'font-mono')}
-              />
-            </Field>
-          </div>
+        <Field
+          label="Price as of"
+          hint={
+            latestDate ? `Real data runs through ${latestDate}.` : undefined
+          }
+        >
+          <input
+            type="date"
+            value={asOf}
+            max={latestDate ?? undefined}
+            onChange={(e) => {
+              const v = e.target.value
+              // Belt-and-braces: `max` stops the picker UI, but a
+              // typed/pasted value can still slip past it in some
+              // browsers -- clamp here too so this field can never hold
+              // a date the backend has no data for.
+              setAsOf(latestDate && v > latestDate ? latestDate : v)
+            }}
+            className={cn(inputCls, 'font-mono')}
+          />
+        </Field>
+        <Field label="Contract term (days)">
+          <input
+            type="number"
+            min={1}
+            required
+            value={contractTermDays}
+            onChange={(e) => setContractTermDays(e.target.value)}
+            className={cn(inputCls, 'font-mono')}
+          />
+        </Field>
+        <Field label="Laycan start">
+          <input
+            type="date"
+            required
+            value={laycanStart}
+            onChange={(e) => setLaycanStart(e.target.value)}
+            className={cn(inputCls, 'font-mono')}
+          />
+        </Field>
+        <Field label="Laycan end">
+          <input
+            type="date"
+            required
+            min={laycanStart}
+            value={laycanEnd}
+            onChange={(e) => setLaycanEnd(e.target.value)}
+            className={cn(inputCls, 'font-mono')}
+          />
+        </Field>
+      </div>
 
-          <Field label={`Risk tolerance: ${riskTolerance}`} className="max-w-xs">
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.1}
-              value={riskTolerance}
-              onChange={(e) => setRiskTolerance(e.target.value)}
-              className="h-1 w-full cursor-pointer appearance-none rounded bg-muted accent-primary"
-            />
-            <div className="flex justify-between text-micro uppercase tracking-wide text-muted-foreground">
-              <span>Risk-neutral</span>
-              <span>Risk-averse</span>
-            </div>
-          </Field>
+      <Field label={`Risk tolerance: ${riskTolerance}`} className="max-w-xs">
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.1}
+          value={riskTolerance}
+          onChange={(e) => setRiskTolerance(e.target.value)}
+          className="h-1 w-full cursor-pointer appearance-none rounded bg-muted accent-primary"
+        />
+        <div className="flex justify-between text-micro uppercase tracking-wide text-muted-foreground">
+          <span>Risk-neutral</span>
+          <span>Risk-averse</span>
+        </div>
+      </Field>
 
-          <div className="border-t border-border pt-2">
-            <button
-              type="button"
-              onClick={() => setVesselsOpen((v) => !v)}
-              className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
-              aria-expanded={vesselsOpen}
-            >
-              <span
-                className={cn('transition-transform', vesselsOpen && 'rotate-90')}
-                aria-hidden="true"
-              >
-                ▸
-              </span>
-              Vessels in hand (optional)
-              {vessels.length > 0 && (
-                <span className="desk-num font-normal normal-case text-muted-foreground">
-                  · {vessels.length} added
-                </span>
-              )}
-            </button>
+      <div className="border-t border-border pt-2">
+        <button
+          type="button"
+          onClick={() => setVesselsOpen((v) => !v)}
+          className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+          aria-expanded={vesselsOpen}
+        >
+          <span
+            className={cn('transition-transform', vesselsOpen && 'rotate-90')}
+            aria-hidden="true"
+          >
+            ▸
+          </span>
+          Vessels in hand (optional)
+          {vessels.length > 0 && (
+            <span className="desk-num font-normal normal-case text-muted-foreground">
+              · {vessels.length} added
+            </span>
+          )}
+        </button>
 
-            {vesselsOpen && (
-              <div className="mt-2 space-y-2">
-                {vessels.map((v, i) => (
-                  <div key={v.key} className="space-y-2 rounded border border-border p-2">
-                    <div className="flex items-center justify-between">
+        {vesselsOpen && (
+          <div className="mt-2 space-y-2">
+            {vessels.map((v, i) => (
+              <div key={v.key} className="space-y-2 rounded border border-border p-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-micro font-semibold uppercase tracking-wide text-muted-foreground">
+                    Vessel {i + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setVessels((vs) => vs.filter((x) => x.key !== v.key))}
+                    className="text-micro font-semibold uppercase tracking-wide text-risk hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                  <input
+                    value={v.vesselId}
+                    onChange={(e) => updateVessel(v.key, { vesselId: e.target.value })}
+                    placeholder="Vessel ID"
+                    className={cn(inputCls, 'font-mono')}
+                  />
+                  <select
+                    value={v.vesselClass}
+                    onChange={(e) =>
+                      updateVessel(v.key, { vesselClass: e.target.value as VesselClass })
+                    }
+                    className={inputCls}
+                  >
+                    {VESSEL_CLASSES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={v.port}
+                    onChange={(e) => updateVessel(v.key, { port: e.target.value })}
+                    className={cn(inputCls, 'col-span-2')}
+                  >
+                    <option value="">Current port…</option>
+                    {ports.map((p) => (
+                      <option key={p.code} value={p.code}>
+                        {prettyPort(p.name)}
+                      </option>
+                    ))}
+                  </select>
+                  {(
+                    [
+                      ['dwt', 'DWT'],
+                      ['draftM', 'Draft m'],
+                      ['loaM', 'LOA m'],
+                      ['beamM', 'Beam m'],
+                      ['speedKn', 'Speed kn'],
+                      ['ladenFuel', 'Laden t/d'],
+                      ['ballastFuel', 'Ballast t/d'],
+                    ] as const
+                  /* These seven carried their name in `placeholder` only,
+                     and every one of them is pre-filled from
+                     newVesselDraft() -- so the label was gone the moment
+                     the field was rendered. Persistent labels instead. */
+                  ).map(([field, label]) => (
+                    <label key={field} className="flex flex-col gap-0.5">
                       <span className="text-micro font-semibold uppercase tracking-wide text-muted-foreground">
-                        Vessel {i + 1}
+                        {label}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => setVessels((vs) => vs.filter((x) => x.key !== v.key))}
-                        className="text-micro font-semibold uppercase tracking-wide text-risk hover:underline"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                       <input
-                        value={v.vesselId}
-                        onChange={(e) => updateVessel(v.key, { vesselId: e.target.value })}
-                        placeholder="Vessel ID"
+                        type="number"
+                        step="0.1"
+                        min={0.1}
+                        aria-label={label}
+                        value={v[field]}
+                        onChange={(e) => updateVessel(v.key, { [field]: e.target.value })}
                         className={cn(inputCls, 'font-mono')}
                       />
-                      <select
-                        value={v.vesselClass}
-                        onChange={(e) =>
-                          updateVessel(v.key, { vesselClass: e.target.value as VesselClass })
-                        }
-                        className={inputCls}
-                      >
-                        {VESSEL_CLASSES.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        value={v.port}
-                        onChange={(e) => updateVessel(v.key, { port: e.target.value })}
-                        className={cn(inputCls, 'col-span-2')}
-                      >
-                        <option value="">Current port…</option>
-                        {ports.map((p) => (
-                          <option key={p.code} value={p.code}>
-                            {prettyPort(p.name)}
-                          </option>
-                        ))}
-                      </select>
-                      {(
-                        [
-                          ['dwt', 'DWT'],
-                          ['draftM', 'Draft m'],
-                          ['loaM', 'LOA m'],
-                          ['beamM', 'Beam m'],
-                          ['speedKn', 'Speed kn'],
-                          ['ladenFuel', 'Laden t/d'],
-                          ['ballastFuel', 'Ballast t/d'],
-                        ] as const
-                      /* These seven carried their name in `placeholder` only,
-                         and every one of them is pre-filled from
-                         newVesselDraft() -- so the label was gone the moment
-                         the field was rendered. Persistent labels instead. */
-                      ).map(([field, label]) => (
-                        <label key={field} className="flex flex-col gap-0.5">
-                          <span className="text-micro font-semibold uppercase tracking-wide text-muted-foreground">
-                            {label}
-                          </span>
-                          <input
-                            type="number"
-                            step="0.1"
-                            min={0.1}
-                            aria-label={label}
-                            value={v[field]}
-                            onChange={(e) => updateVessel(v.key, { [field]: e.target.value })}
-                            className={cn(inputCls, 'font-mono')}
-                          />
-                        </label>
-                      ))}
-                      <label className="col-span-2 flex flex-col gap-0.5">
-                        <span className="text-micro font-semibold uppercase tracking-wide text-muted-foreground">
-                          Available from
-                        </span>
-                        <input
-                          type="date"
-                          aria-label="Available from"
-                          value={v.availableFrom}
-                          onChange={(e) => updateVessel(v.key, { availableFrom: e.target.value })}
-                          className={cn(inputCls, 'font-mono')}
-                        />
-                      </label>
-                    </div>
-                    {!vesselIsValid(v) && (
-                      <p className="text-micro uppercase text-risk">
-                        Needs an ID, a current port, and positive figures.
-                      </p>
-                    )}
-                  </div>
-                ))}
-
-                {vessels.length > 0 && (
-                  <Field label="Cargo revenue (USD, optional)" className="max-w-xs">
+                    </label>
+                  ))}
+                  <label className="col-span-2 flex flex-col gap-0.5">
+                    <span className="text-micro font-semibold uppercase tracking-wide text-muted-foreground">
+                      Available from
+                    </span>
                     <input
-                      type="number"
-                      min={0}
-                      placeholder="Blank means no vessel assigned to cargo"
-                      value={revenueUsd}
-                      onChange={(e) => setRevenueUsd(e.target.value)}
+                      type="date"
+                      aria-label="Available from"
+                      value={v.availableFrom}
+                      onChange={(e) => updateVessel(v.key, { availableFrom: e.target.value })}
                       className={cn(inputCls, 'font-mono')}
                     />
-                  </Field>
+                  </label>
+                </div>
+                {!vesselIsValid(v) && (
+                  <p className="text-micro uppercase text-risk">
+                    Needs an ID, a current port, and positive figures.
+                  </p>
                 )}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setVessels((vs) => [...vs, newVesselDraft(vs.length + 1, anchorDate)])
-                  }}
-                  className="text-caption font-semibold uppercase tracking-wide text-primary hover:underline"
-                >
-                  + Add vessel
-                </button>
               </div>
+            ))}
+
+            {vessels.length > 0 && (
+              <Field label="Cargo revenue (USD, optional)" className="max-w-xs">
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Blank means no vessel assigned to cargo"
+                  value={revenueUsd}
+                  onChange={(e) => setRevenueUsd(e.target.value)}
+                  className={cn(inputCls, 'font-mono')}
+                />
+              </Field>
             )}
-          </div>
 
-          {sameEnds && <p className="text-body text-risk">Origin and destination must differ.</p>}
-          {portsError && <p className="text-body text-risk">{portsError}</p>}
-
-          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
-            <button
-              type="submit"
-              className="inline-flex h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-sm bg-primary px-4 text-lead font-semibold text-primary-foreground transition-colors duration-150 hover:bg-primary/90 active:bg-primary/95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={!canSubmit || submitting}
-              // A disabled button with no stated reason reads as broken. Say
-              // which field is still missing instead.
-              title={
-                submitting
-                  ? 'Solving…'
-                  : sameEnds
-                    ? 'Origin and destination must differ.'
-                    : originPort === '' || destPort === ''
-                      ? 'Pick an origin and a destination port first.'
-                      : !vesselsValid
-                        ? 'Every vessel needs an ID, a current port, and positive figures.'
-                        : 'Run the quote'
-              }
-            >
-              {submitting ? 'Solving…' : 'Run quote'}
-            </button>
             <button
               type="button"
-              onClick={fillWithExample}
-              className={cn(
-                'inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-sm border px-3 text-caption font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring',
-                exampleLoaded
-                  ? 'border-go/40 bg-go/15 text-go-on-soft'
-                  : 'border-border bg-surface-2 text-muted-foreground hover:bg-accent hover:text-foreground',
-              )}
-              title={`Fill this form with a real cargo: ${EXAMPLE_CAPTION}, plus two vessels in hand`}
+              onClick={() => {
+                setVessels((vs) => [...vs, newVesselDraft(vs.length + 1, anchorDate)])
+              }}
+              className="text-caption font-semibold uppercase tracking-wide text-primary hover:underline"
             >
-              {exampleLoaded ? (
-                <>
-                  <span aria-hidden="true">✓</span>Example loaded, 2 vessels
-                </>
-              ) : (
-                'Load worked example'
-              )}
+              + Add vessel
             </button>
-            {/* A live region, so the confirmation is not purely visual: a
-                screen reader is told the form was filled too. */}
-            <span className="sr-only" role="status" aria-live="polite">
-              {exampleLoaded ? 'Worked example loaded, including two vessels in hand.' : ''}
-            </span>
           </div>
-        </form>
-      </Panel>
+        )}
+      </div>
+
+      {sameEnds && <p className="text-body text-risk">Origin and destination must differ.</p>}
+      {portsError && <p className="text-body text-risk">{portsError}</p>}
+
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        <button
+          type="submit"
+          className="inline-flex h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-sm bg-primary px-4 text-lead font-semibold text-primary-foreground transition-colors duration-150 hover:bg-primary/90 active:bg-primary/95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-45"
+          disabled={!canSubmit || submitting}
+          // A disabled button with no stated reason reads as broken. Say
+          // which field is still missing instead.
+          title={
+            submitting
+              ? 'Solving…'
+              : sameEnds
+                ? 'Origin and destination must differ.'
+                : originPort === '' || destPort === ''
+                  ? 'Pick an origin and a destination port first.'
+                  : !vesselsValid
+                    ? 'Every vessel needs an ID, a current port, and positive figures.'
+                    : 'Run the quote'
+          }
+        >
+          {submitting ? 'Solving…' : 'Run quote'}
+        </button>
+        <button
+          type="button"
+          onClick={fillWithExample}
+          className={cn(
+            'inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-sm border px-3 text-caption font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring',
+            exampleLoaded
+              ? 'border-go/40 bg-go/15 text-go-on-soft'
+              : 'border-border bg-surface-2 text-muted-foreground hover:bg-accent hover:text-foreground',
+          )}
+          title={`Fill this form with a real cargo: ${EXAMPLE_CAPTION}, plus two vessels in hand`}
+        >
+          {exampleLoaded ? (
+            <>
+              <span aria-hidden="true">✓</span>Example loaded, 2 vessels
+            </>
+          ) : (
+            'Load worked example'
+          )}
+        </button>
+        {/* A live region, so the confirmation is not purely visual: a
+            screen reader is told the form was filled too. */}
+        <span className="sr-only" role="status" aria-live="polite">
+          {exampleLoaded ? 'Worked example loaded, including two vessels in hand.' : ''}
+        </span>
+      </div>
+    </form>
+  )
+
+  return (
+    <div ref={formRef} id="quote-form">
+      {chromeless ? body : <Panel title="New Charter Quote">{body}</Panel>}
     </div>
   )
 }

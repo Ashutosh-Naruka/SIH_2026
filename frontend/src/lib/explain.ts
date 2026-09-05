@@ -24,10 +24,20 @@ import { useSyncExternalStore } from 'react'
  *     knows what a walk-away line is should not pay for the explanation
  *     forever.
  *
- * So the text is always in the source, and its visibility is one switch. It
- * defaults ON: the person this was written for is the one who has never seen
- * the desk before, and the person who wants it off is by definition able to
- * find the toggle. The choice persists per browser.
+ * So the text is always in the source, and its visibility is one switch.
+ *
+ * It defaults OFF, reversed from the original choice. The reasoning for ON
+ * was that a first-time reader is the person this text was written for, and
+ * that is still true -- but ON also meant that every panel on a screen full
+ * of panels carried two or three extra lines of prose before the reader had
+ * asked anything, and the desk was reported as unreadable for exactly that:
+ * too much text, shown upfront, competing with the numbers it annotates. The
+ * explanations are not the problem; showing all of them at once, unasked, is.
+ *
+ * Nothing is lost by the flip. Every sentence is still written, still in the
+ * source, and one labelled click away in the top bar, and the choice persists
+ * per browser -- so a reader who wants the explanations turns them on once and
+ * keeps them, and a reader who does not never pays for them.
  *
  * Deliberately NOT React context: `Panel` is rendered from ~20 files including
  * a few that mount outside the main shell tree, and a provider that some
@@ -41,13 +51,14 @@ const STORAGE_KEY = 'desk.explainMode'
 
 function readStored(): boolean {
   // Any of localStorage-disabled, private mode, or a cleared profile throws or
-  // returns null here. Default ON is the honest fallback: showing the
-  // explanations to someone whose preference we cannot read costs them one
-  // click, whereas hiding them costs a first-time reader the whole point.
+  // returns null here. Default OFF is the fallback for the same reason it is
+  // the default at all: a reader whose preference cannot be read sees the
+  // uncluttered desk and one clearly labelled "Explain" button, rather than
+  // every panel's explanation at once on a screen they have not read yet.
   try {
-    return window.localStorage.getItem(STORAGE_KEY) !== 'off'
+    return window.localStorage.getItem(STORAGE_KEY) === 'on'
   } catch {
-    return true
+    return false
   }
 }
 
@@ -80,5 +91,5 @@ export function useExplainMode(): boolean {
   // The third argument is the server/prerender snapshot. This app is
   // client-rendered, but passing it keeps the hook correct if it is ever
   // rendered without a `window`.
-  return useSyncExternalStore(subscribe, getSnapshot, () => true)
+  return useSyncExternalStore(subscribe, getSnapshot, () => false)
 }

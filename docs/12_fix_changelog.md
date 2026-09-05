@@ -4719,3 +4719,169 @@ That is a legitimate geometric interpolation, not synthetic data, caught by the 
 Confirmed identical before and after this round by running the tripwire's own patterns against the
 pre-change backup: 1 offender in both. Left alone because the allowlist is deliberately empty and
 this round has nothing to do with it.
+
+## 2026-09-05 — UX round 7: the Voyage Desk rebuilt as labelled bands
+
+Reported against a screenshot of a real voyage-management screen (GBB Voyages),
+with two specific diagnoses that were both correct:
+
+  1. "not much text, localised to a few positions, written in bullet points,
+     and tells the user something about the user's situation instead of
+     gloating about an app's feature"
+  2. "you can read the entire thing by simply going left to right, top to
+     bottom. In our website I have no clue what data I am supposed to look at,
+     and at what order."
+
+The second is the real defect. The desk was twelve equally-weighted bordered
+panels stacked about two thousand pixels tall. Every figure on it was right,
+and nothing on screen said which box to read first, or that box nine was the
+evidence for box two. There was no reading order because the layout did not
+encode one.
+
+### The band system
+
+`components/desk/band.tsx` is new and is the whole idea: one sheet, not twelve
+cards. Each band carries its name in a left gutter and the bands run in
+decision order, so the page reads straight down that gutter:
+
+    CARGO     what you asked for (folds to one line once answered)
+    DECISION  the verdict, as a sentence
+    RESULTS   every number that decides it, on one row
+    ROUTE     the globe, and every routing the solver evaluated
+    REMARKS   what to watch on this fixture, as bullets
+    EVIDENCE  the twelve supporting panels, in five tabs
+
+`CollapsibleBand` hides its body with a class and never unmounts it. That is
+load-bearing, not a detail: the body of the CARGO band is the quote form, which
+owns every typed field as component state, so `open ? children : summary` would
+have discarded the cargo the moment a quote folded the form. Verified live by
+folding and reopening with two vessels loaded: all sixteen vessel fields, both
+ports and the volume come back exactly as typed.
+
+### What is new, and what only moved
+
+New: `results-strip.tsx` (eight decision figures on one row, the reference
+screenshot's RESULTS band applied to chartering) and `voyage-remarks.tsx`
+(bullets about this cargo: the real risk alerts, the weather buffer, the
+class-benchmark caveat, congestion at either end, non-calm chokepoints, and
+the re-check trigger). Neither computes anything. Every figure and every
+sentence was already on the desk; both were assembled out of four or five
+panels by the reader, which is the work these two components now do instead.
+
+Moved, not deleted: all twelve evidence panels still render with the same
+props and the same data, grouped into five tabs (Decision, Forecast, Voyage,
+Cost, Risk). They stay MOUNTED whichever tab is showing, hidden by class --
+the anchorage panel fetches its satellite census on mount and unmounting on
+each tab switch would re-issue that request every time, and the chart panels'
+ResizeObserver re-measures cleanly when a hidden one is shown again.
+
+`decision-headline.tsx` lost its card border, its route breadcrumb and its two
+action buttons: the band gutter frames it, the CARGO line already states the
+route, and Copy link / One-page brief moved to the DECISION band's own action
+slot. Both buttons still work and still do the same thing. The verdict-coloured
+wash and left accent bar stay, because that is what makes a LOCK and a WAIT
+distinguishable before either is read.
+
+The globe stays on the front screen, as asked, at full size in the ROUTE band.
+
+### Explain mode now defaults OFF
+
+The largest single source of upfront text was not the layout: `lib/explain.ts`
+defaulted ON, so every panel rendered two or three lines of explanation before
+the reader had asked for anything. The original reasoning (a first-time reader
+is who the text is for) is still sound, but showing all of it at once on a
+screen full of panels is what "suffocating" described. Nothing is lost: every
+sentence is still written, still in the source, and one labelled click away in
+the top bar, and the choice persists per browser.
+
+### Run quote now brings the answer to the reader
+
+Reported: with vessels added the form is taller than the screen, so pressing
+Run quote appeared to do nothing and the answer had to be scrolled down to.
+Both halves are fixed together -- folding the CARGO band removes the height
+that caused it, and the page scrolls the answer into view for the case where
+the reader was elsewhere when they re-ran. The scroll fires on the solving
+transition, not on the value, so it cannot fight a reader scrolling during the
+wait.
+
+Measured live at an emulated 1500x760 laptop viewport, which is the size that
+actually reproduces the complaint: form 788px against a 760px viewport, reader
+scrolled to 217px to reach Run quote, and after pressing it scrollTop returned
+to 8px with the form folded and the DECISION band at y=90. The whole answer
+(cargo line, verdict, eight results figures, globe) is above the fold.
+
+### Verified
+
+`tsc -b --noEmit`, `npm run build` and `npm run lint` all clean (0 errors; the
+one new warning, set-state-in-effect at voyage-desk-page.tsx:218, is the same
+pattern anchorage-panel.tsx already uses twice and is correct for responding to
+an external event token). Driven live in headless Chrome over CDP against both
+running servers: all five evidence tabs render their panels, and all seven
+screens (desk, portfolio, season-plan, port-twin, tonnage-field, fragility,
+ledger) mount with zero console errors and no crash.
+
+`lib/nav.ts`'s DESK_SECTIONS now names the five bands rather than five panels.
+It had to: four of the old targets are inside Evidence tabs now, and an element
+inside an unselected tab is display:none, so scrollIntoView lands nowhere and
+the IntersectionObserver driving the "you are here" highlight never sees it.
+
+### Scope
+
+Only the Voyage Desk was rebuilt. Portfolio, Season Plan, Port Twin, Tonnage
+Field, Fragility and Ledger keep their existing layout -- they are secondary
+instruments, the complaint was about the front screen, and rebuilding six more
+pages in the same pass would have put a lot of working screens at risk for no
+reported problem. The band primitive is generic and they can be moved onto it
+the same way if wanted.
+
+No backend file was touched this round.
+
+## 2026-09-05 (later) — Round 7a: de-duplicating DECISION against RESULTS
+
+Follow-up question, and a good one: "the first section of evidence, the
+Decision tab, isn't it too important to be shown at the end? Should Evidence
+move above Route? But then would it become too redundant?"
+
+The redundancy instinct was right, and it was pointing at a real fault that
+round 7 introduced rather than at the tab order. The DECISION band printed the
+walk-away line, the expected edge and the confidence; the RESULTS strip prints
+all three again about eighty pixels below it. The same figure twice, close
+enough to take in with one glance, which teaches a reader that the desk repeats
+itself and that neither copy is the definitive one.
+
+Evidence was NOT moved above Route. Three reasons: it would push the globe
+below the fold and lose the "verdict and the route it is for in one frame"
+property the route placement exists for; it would not remove any duplication,
+it would amplify it (a display-size WAIT sitting a couple of hundred pixels
+under a band that just said "Wait before fixing"); and a five-tab bar high on
+the page invites tab-clicking before the answer has been read, which is the
+"what am I supposed to look at" problem round 7 was built to fix.
+
+What changed instead:
+
+- The DECISION band's three figures are replaced by two that appear nowhere
+  else: the size of the commitment being decided (`today x term`, $632.7K
+  here) and the option value of waiting ($2,912/day), which is the actual
+  reason a WAIT verdict can disagree with a naive rate comparison and was
+  previously buried at the bottom of the page. RESULTS keeps walk-away,
+  expected edge and confidence as their single home.
+
+- The first evidence tab is renamed "Decision" to "Why". Sharing a name with
+  the DECISION band made the band read as a summary OF the tab, and the tab
+  read as the important thing buried at the end -- which is what prompted the
+  question. It is the reasoning behind the verdict, and naming it that way
+  puts the two in the right relationship.
+
+Deliberately NOT promoted into the DECISION band: the Why tab's lock-vs-wait
+"cost over term" table. On the live quote used to check this it reads $632.7K
+to lock against $643.1K to wait, so waiting costs MORE, while the verdict says
+wait -- because the option value more than covers the difference. That pair
+contradicts itself unless the option-value caveat sits directly beside it,
+which is precisely the F-06 failure (a caption keyed off the fused verdict
+rather than off the number it was describing). The table stays in the Why tab
+where its caveats already live, and the option value it turns on is now stated
+in the DECISION band instead.
+
+Verified: `tsc`, `npm run build`, `npm run lint` clean (0 errors). Re-checked
+live in headless Chrome against both servers: no figure now appears in both
+the DECISION band and the RESULTS strip.
