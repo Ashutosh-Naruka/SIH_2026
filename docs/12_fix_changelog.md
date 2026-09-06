@@ -5023,3 +5023,62 @@ findings. Not re-checked in a browser screenshot (same no-headless-browser-
 driver constraint as the last two rounds) -- verify by opening the Settings
 drawer, flipping the top-bar switch, and confirming the drawer's switch
 updates without closing/reopening it, and vice versa.
+
+## 2026-09-06 — Deployment config: Render (backend) + Vercel (frontend)
+
+User asked to deploy the app. Two things surfaced before writing any config,
+both surfaced to the user rather than acted on silently:
+
+1. They first asked for a PR from `ux-review-fixes-2` into `main`. Checked
+   `git merge-base` between the two and got nothing -- `main` and
+   `ux-review-fixes-2` share NO common ancestor at all (`main` predates
+   `backend/` and `frontend/` entirely and has its own independent later
+   commits: ML training, weather support, a Pydantic API refactor). A PR
+   against `main` would show ~615 files / ~516K lines changed and almost
+   certainly fail to merge automatically. `ux-review-fixes-2`'s real parent
+   is the `ux-review-fixes` branch (98 files / ~2.9K lines, a normal
+   incremental diff). Put this to the user directly; they chose to skip the
+   PR for now and deploy straight from the branch.
+
+2. Confirmed no existing deploy config anywhere in the repo and no hosting
+   CLI authenticated (`vercel whoami` -> no credentials; `railway`/`flyctl`/
+   `netlify` not installed). The backend imports `torch`, `xgboost` and
+   `polars` and loads models/parquet files into a long-lived process at
+   startup, which rules out a serverless platform for it. Asked the user to
+   pick a target and sign in themselves (no OAuth flow is available from
+   here); they chose Render for the backend, Vercel for the frontend.
+
+Added, all new files:
+
+- `render.yaml` — a Render Blueprint. Backend has no native `uv` runtime on
+  Render, so the build command installs `uv` itself and runs
+  `uv sync --frozen`, matching CLAUDE.md's own `uv run uvicorn ...` command
+  rather than a separately-resolved `requirements.txt`. `healthCheckPath` is
+  set to `/docs` because `/` has no route in `backend/main.py` and 404s,
+  which would otherwise look like a permanently-failed health check. Plan
+  defaults to `free` (512MB RAM, spins down idle) with a comment flagging
+  that `torch`+`xgboost`+`polars` resident together may need `starter`
+  instead if the free instance OOMs.
+- `frontend/vercel.json` — a `rewrites` rule proxying `/api/*` to the Render
+  backend server-side, rather than pointing the frontend at the Render origin
+  directly via `VITE_API_BASE_URL` (which `lib/api.ts` already supports).
+  Reason: the session cookie is set `samesite="lax"` (`backend/main.py`,
+  `response.set_cookie`) deliberately, and a direct Vercel-to-Render call
+  from the browser would be cross-site, so the browser would silently drop
+  that cookie on every request. Proxying through Vercel keeps the browser's
+  view same-origin, so the existing cookie policy and the existing
+  `DESK_CORS_ORIGINS`-gated CORS setup both keep working completely
+  unmodified -- this needed zero backend or frontend code changes, and is the
+  same shape `lib/api.ts`'s own F-39 comment already anticipated ("something
+  in front of the static files... proxies /api itself").
+- `docs/16_deployment.md` — the one-time setup steps for both dashboards (I
+  cannot complete either myself: connecting a GitHub repo to Render/Vercel is
+  an OAuth flow only the account owner can run) and the reasoning above, so a
+  future reader does not have to reconstruct why the frontend proxies through
+  Vercel instead of calling Render directly.
+
+Verified: `render.yaml` parses as valid YAML (`yaml.safe_load`),
+`frontend/vercel.json` parses as valid JSON. Not verified end-to-end against
+live Render/Vercel deployments -- that requires the user's own accounts and
+is documented as the next step in `docs/16_deployment.md`, not something this
+session could complete.
