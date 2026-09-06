@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { X } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { resolveTheme, setTheme, type Theme } from '@/lib/theme'
+import { useEffect } from 'react'
+import { useTheme } from '@/lib/theme'
 import { saveSettings, type DeskSettings } from '@/lib/settings'
 import { cn } from '@/lib/utils'
 
@@ -31,11 +31,7 @@ export function SettingsDrawer({
    *  and disable rupees outright when no real rate exists. */
   fx: { inrPerUsd: number | null; asOf: string | null }
 }) {
-  const [theme, setThemeState] = useState<Theme>(() =>
-    typeof document !== 'undefined' && document.documentElement.classList.contains('light')
-      ? 'light'
-      : resolveTheme(),
-  )
+  const [theme, setTheme] = useTheme()
 
   useEffect(() => {
     if (!open) return
@@ -154,10 +150,7 @@ export function SettingsDrawer({
                       key={t}
                       type="button"
                       aria-pressed={theme === t}
-                      onClick={() => {
-                        setTheme(t)
-                        setThemeState(t)
-                      }}
+                      onClick={() => setTheme(t)}
                       className={cn(
                         'cursor-pointer border-r border-border px-3 py-1 text-caption font-semibold capitalize transition-colors last:border-r-0',
                         'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',

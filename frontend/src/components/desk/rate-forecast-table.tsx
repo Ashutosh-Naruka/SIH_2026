@@ -1,4 +1,5 @@
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
+import { useId } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { DURATION, drawPath, transition } from '@/lib/motion'
 import { Panel } from '@/components/desk/panel'
@@ -39,13 +40,109 @@ function Direction({ dir }: { dir: RateHorizon['direction'] }) {
   return <Minus className="h-3.5 w-3.5 text-muted-foreground" />
 }
 
-const H = 116
-const PAD = { t: 10, r: 10, b: 16, l: 44 }
+interface Point {
+  x: number
+  y: number
+}
+
+/**
+ * Tangents for a monotone cubic (Fritsch-Carlson) Hermite spline: the same
+ * curve family d3's `curveMonotoneX` uses. The forecast only has 3 real
+ * anchor points (7d/30d/90d) -- there is no model output for the days between
+ * them, so a curve here is strictly a rendering choice, not new data. Plain
+ * Catmull-Rom or natural-cubic splines can overshoot past an anchor's
+ * neighbours and imply a bounce that never happened; monotone Hermite is
+ * built specifically to never over/undershoot between consecutive points,
+ * which is why it is the standard choice for smoothing real, sparse
+ * financial series.
+ */
+function monotoneTangents(pts: Point[]): number[] {
+  const n = pts.length
+  const d: number[] = []
+  for (let i = 0; i < n - 1; i++) {
+    d.push((pts[i + 1].y - pts[i].y) / (pts[i + 1].x - pts[i].x))
+  }
+  const m: number[] = new Array(n)
+  m[0] = d[0]
+  m[n - 1] = d[n - 2]
+  for (let i = 1; i < n - 1; i++) {
+    m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2
+  }
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) {
+      m[i] = 0
+      m[i + 1] = 0
+      continue
+    }
+    const a = m[i] / d[i]
+    const b = m[i + 1] / d[i]
+    const s = a * a + b * b
+    if (s > 9) {
+      const t = 3 / Math.sqrt(s)
+      m[i] = t * a * d[i]
+      m[i + 1] = t * b * d[i]
+    }
+  }
+  return m
+}
+
+function monotoneSegments(pts: Point[]) {
+  const m = monotoneTangents(pts)
+  return pts.slice(0, -1).map((p0, i) => {
+    const p1 = pts[i + 1]
+    const dx = (p1.x - p0.x) / 3
+    return {
+      p0,
+      p1,
+      cp1: { x: p0.x + dx, y: p0.y + m[i] * dx },
+      cp2: { x: p1.x - dx, y: p1.y - m[i + 1] * dx },
+    }
+  })
+}
+
+const fmt = (n: number) => n.toFixed(1)
+
+function monotonePath(pts: Point[]): string {
+  if (pts.length < 2) return pts.length === 1 ? `M${fmt(pts[0].x)} ${fmt(pts[0].y)}` : ''
+  let d = `M${fmt(pts[0].x)} ${fmt(pts[0].y)}`
+  for (const s of monotoneSegments(pts)) {
+    d += ` C${fmt(s.cp1.x)} ${fmt(s.cp1.y)} ${fmt(s.cp2.x)} ${fmt(s.cp2.y)} ${fmt(s.p1.x)} ${fmt(s.p1.y)}`
+  }
+  return d
+}
+
+/** Closed ribbon between two monotone curves sharing the same x positions. */
+function monotoneBandPath(topPts: Point[], bottomPts: Point[]): string {
+  if (topPts.length === 0) return ''
+  if (topPts.length === 1) {
+    return `M${fmt(topPts[0].x)} ${fmt(topPts[0].y)} L${fmt(bottomPts[0].x)} ${fmt(bottomPts[0].y)} Z`
+  }
+  let d = `M${fmt(topPts[0].x)} ${fmt(topPts[0].y)}`
+  for (const s of monotoneSegments(topPts)) {
+    d += ` C${fmt(s.cp1.x)} ${fmt(s.cp1.y)} ${fmt(s.cp2.x)} ${fmt(s.cp2.y)} ${fmt(s.p1.x)} ${fmt(s.p1.y)}`
+  }
+  const bottomSegs = monotoneSegments(bottomPts)
+  const lastBottom = bottomPts[bottomPts.length - 1]
+  d += ` L${fmt(lastBottom.x)} ${fmt(lastBottom.y)}`
+  for (let i = bottomSegs.length - 1; i >= 0; i--) {
+    const s = bottomSegs[i]
+    d += ` C${fmt(s.cp2.x)} ${fmt(s.cp2.y)} ${fmt(s.cp1.x)} ${fmt(s.cp1.y)} ${fmt(s.p0.x)} ${fmt(s.p0.y)}`
+  }
+  return `${d} Z`
+}
+
+// Aspect ratio is capped rather than fixed: a wide panel used to stretch this
+// chart to ~9:1 (116px tall against a 1000px+ panel), which read as a thin
+// strip rather than a chart. Height now scales with width, within a band
+// that keeps it chart-shaped at both a narrow and a wide panel.
+const PAD = { t: 18, r: 20, b: 24, l: 56 }
 
 function FanChart({ rows, todayQuote }: { rows: RateHorizon[]; todayQuote: number }) {
   const [box, ref] = useElementSize<HTMLDivElement>()
   const reduced = useReducedMotion()
+  const gradientId = useId()
   const w = Math.max(box.width, 240)
+  const H = Math.min(220, Math.max(160, Math.round(w * 0.26)))
 
   if (rows.length === 0) return null
   const sorted = [...rows].sort((a, b) => a.horizon_days - b.horizon_days)
@@ -66,23 +163,81 @@ function FanChart({ rows, todayQuote }: { rows: RateHorizon[]; todayQuote: numbe
     PAD.l + (Math.sqrt(day) / Math.sqrt(maxDay)) * (w - PAD.l - PAD.r)
   const y = (v: number) => PAD.t + (1 - (v - yMin) / (yMax - yMin)) * (H - PAD.t - PAD.b)
 
-  const band =
-    sorted.map((r) => `${x(r.horizon_days).toFixed(1)},${y(r.p90_usd_per_day).toFixed(1)}`).join(' ') +
-    ' ' +
-    [...sorted]
-      .reverse()
-      .map((r) => `${x(r.horizon_days).toFixed(1)},${y(r.p10_usd_per_day).toFixed(1)}`)
-      .join(' ')
+  // Four evenly spaced horizontal gridlines (incl. top/bottom) instead of
+  // just the two bound labels -- a bare min/max reads as a placeholder axis,
+  // a repeated tick spacing reads as an intentional one.
+  const yTicks = Array.from({ length: 4 }, (_, i) => yMin + ((yMax - yMin) * i) / 3)
 
-  const p50Line = sorted
-    .map((r, i) => `${i === 0 ? 'M' : 'L'}${x(r.horizon_days).toFixed(1)} ${y(r.p50_usd_per_day).toFixed(1)}`)
-    .join(' ')
+  const p90Points = sorted.map((r) => ({ x: x(r.horizon_days), y: y(r.p90_usd_per_day) }))
+  const p50Points = sorted.map((r) => ({ x: x(r.horizon_days), y: y(r.p50_usd_per_day) }))
+  const p10Points = sorted.map((r) => ({ x: x(r.horizon_days), y: y(r.p10_usd_per_day) }))
+
+  const band = monotoneBandPath(p90Points, p10Points)
+  const p50Line = monotonePath(p50Points)
 
   const yToday = y(todayQuote)
 
   return (
     <div ref={ref} className="w-full">
       <svg width={w} height={H} className="block">
+        <defs>
+          <linearGradient id={`fanBandFill-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--market)" stopOpacity={0.22} />
+            <stop offset="100%" stopColor="var(--market)" stopOpacity={0.06} />
+          </linearGradient>
+        </defs>
+
+        {/* plot-area frame: a faint tint plus a hairline border turns the
+            chart into a bounded card rather than lines floating on the panel
+            background -- the same cue Panel itself uses one level up. */}
+        <rect
+          x={PAD.l}
+          y={PAD.t}
+          width={w - PAD.l - PAD.r}
+          height={H - PAD.t - PAD.b}
+          fill="var(--surface-2)"
+          fillOpacity={0.4}
+          stroke="var(--border)"
+          strokeWidth={1}
+        />
+
+        {/* horizontal gridlines + value ticks */}
+        {yTicks.map((t, i) => (
+          <g key={`ytick-${i}`}>
+            <line
+              x1={PAD.l}
+              x2={w - PAD.r}
+              y1={y(t)}
+              y2={y(t)}
+              stroke="var(--border)"
+              strokeWidth={1}
+              opacity={0.6}
+            />
+            <text
+              x={PAD.l - 8}
+              y={y(t) + 3}
+              textAnchor="end"
+              className="fill-muted-foreground text-micro"
+            >
+              ${formatNumber(Math.round(t / 100) * 100)}
+            </text>
+          </g>
+        ))}
+
+        {/* vertical guides at each observed horizon */}
+        {sorted.map((r) => (
+          <line
+            key={`xtick-${r.horizon_days}`}
+            x1={x(r.horizon_days)}
+            x2={x(r.horizon_days)}
+            y1={PAD.t}
+            y2={H - PAD.b}
+            stroke="var(--border)"
+            strokeWidth={1}
+            opacity={0.35}
+          />
+        ))}
+
         {/* today's quote reference */}
         <line
           x1={PAD.l}
@@ -90,11 +245,11 @@ function FanChart({ rows, todayQuote }: { rows: RateHorizon[]; todayQuote: numbe
           y1={yToday}
           y2={yToday}
           stroke="var(--foreground)"
-          strokeWidth={1}
+          strokeWidth={1.25}
           strokeDasharray="3 3"
-          opacity={0.5}
+          opacity={0.6}
         />
-        <text x={PAD.l - 4} y={yToday + 3} textAnchor="end" className="fill-muted-foreground text-micro">
+        <text x={PAD.l - 8} y={yToday + 3} textAnchor="end" className="fill-muted-foreground text-micro font-medium">
           today
         </text>
 
@@ -109,12 +264,15 @@ function FanChart({ rows, todayQuote }: { rows: RateHorizon[]; todayQuote: numbe
           `opacity` is expressed only in the variant, never alongside a `style`
           -- see the note on fadeBand in lib/motion for why.
         */}
-        <motion.polygon
+        <motion.path
           key={`band-${signature}`}
-          points={band}
-          fill="var(--market)"
-          initial={reduced ? { opacity: 0.16 } : { opacity: 0 }}
-          animate={{ opacity: 0.16 }}
+          d={band}
+          fill={`url(#fanBandFill-${gradientId})`}
+          stroke="var(--market)"
+          strokeOpacity={0.25}
+          strokeWidth={1}
+          initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={reduced ? { duration: 0 } : { ...transition.slow, delay: 0.05 }}
         />
         <motion.path
@@ -122,8 +280,9 @@ function FanChart({ rows, todayQuote }: { rows: RateHorizon[]; todayQuote: numbe
           d={p50Line}
           fill="none"
           stroke="var(--market)"
-          strokeWidth={1.75}
+          strokeWidth={2}
           strokeLinejoin="round"
+          strokeLinecap="round"
           pathLength={1}
           initial={reduced ? false : 'hidden'}
           animate="shown"
@@ -134,8 +293,10 @@ function FanChart({ rows, todayQuote }: { rows: RateHorizon[]; todayQuote: numbe
             <motion.circle
               cx={x(r.horizon_days)}
               cy={y(r.p50_usd_per_day)}
-              r={2.5}
-              fill="var(--market)"
+              r={3.5}
+              fill="var(--surface)"
+              stroke="var(--market)"
+              strokeWidth={2}
               initial={reduced ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={
@@ -146,21 +307,14 @@ function FanChart({ rows, todayQuote }: { rows: RateHorizon[]; todayQuote: numbe
             />
             <text
               x={x(r.horizon_days)}
-              y={H - 4}
+              y={H - 6}
               textAnchor="middle"
-              className="fill-muted-foreground text-micro"
+              className="fill-muted-foreground text-micro font-medium"
             >
               {r.horizon_days}d
             </text>
           </g>
         ))}
-        {/* y bounds */}
-        <text x={PAD.l - 4} y={y(yMax) + 8} textAnchor="end" className="fill-muted-foreground text-micro">
-          ${formatNumber(Math.round(yMax / 100) * 100)}
-        </text>
-        <text x={PAD.l - 4} y={y(yMin)} textAnchor="end" className="fill-muted-foreground text-micro">
-          ${formatNumber(Math.round(yMin / 100) * 100)}
-        </text>
       </svg>
     </div>
   )

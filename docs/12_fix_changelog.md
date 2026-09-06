@@ -4886,54 +4886,140 @@ Verified: `tsc`, `npm run build`, `npm run lint` clean (0 errors). Re-checked
 live in headless Chrome against both servers: no figure now appears in both
 the DECISION band and the RESULTS strip.
 
-## 2026-09-05 (later still) — Round 7b: the solving list was off-screen on the first run only
+## 2026-09-05 (later still) — Round 7b: Rate Forecast fan chart, "long and thin"
 
-Reported by a teammate: on a fresh page, add a couple of vessels (or press Load
-worked example) and press Run quote, and the solving progress list is at the
-bottom of the screen. Every run after that is fine, with the form folding away
-and the progress list appearing near the top.
+User complaint on the Forecast tab: the fan chart read as a long, thin strip.
+The cause was `frontend/src/components/desk/rate-forecast-table.tsx`'s
+`FanChart` — height was a flat `H = 116` regardless of container width, and
+the panel it sits in stretches to the full width of the Evidence band (Voyage
+Desk main column), so the rendered aspect ratio ran to roughly 9:1 or worse on
+a normal desktop width. There was also no chart frame or grid, just three
+freestanding SVG shapes on the panel background — which reads as unfinished
+rather than as a deliberately minimal chart.
 
-The "first run only" shape names the cause exactly. The CARGO band's open state
-was `cargoOpen || !quote`. On the first run there is no quote yet, so `!quote`
-forced the band open for the whole solve regardless of the `setCargoOpen(false)`
-that the submit handler had already run. The form stays at full height (788px
-with two vessels, against a 760px laptop viewport) and pushes the SOLVING band
-below the fold. The scroll-into-view cannot rescue it either: with only the form
-and the progress list on the page there is not enough content below the target
-to scroll it up to the top, so the container hits its maximum scrollTop with the
-list still most of the way down. Every later run looked right purely because a
-quote existed by then and the form folded.
+What changed, all in the same file:
 
-Measured live in headless Chrome at 1500x760, first run, worked example loaded:
+- Height now scales with measured width — `H = clamp(160, round(w * 0.26), 220)`
+  — instead of a fixed 116px, so the aspect ratio stays chart-like (roughly
+  4:1–5:1) whether the panel is narrow or wide, rather than fixed-thin at any
+  width.
+- Added a bounded plot-area frame (a tinted `rect` plus hairline border) so
+  the chart reads as a card, matching the frame language `Panel` already uses
+  one level up.
+- Added four evenly spaced horizontal gridlines with value ticks, replacing
+  the previous two bare min/max labels, and faint vertical guides at each
+  observed horizon (7d/30d/90d) — both were absent before, which is why the
+  three plotted shapes felt like they were floating rather than sitting on an
+  axis.
+- The uncertainty band is now a top-to-bottom gradient fill (`var(--market)`
+  22%→6% opacity) with a faint stroked outline, instead of one flat 16%
+  fill — reads as a filled area rather than a translucent block.
+- The p50 line is heavier (1.75px → 2px, rounded caps) and its point markers
+  are now hollow rings (surface-fill, market-stroke, r 2.5→3.5) instead of
+  solid dots, which is more legible against the gridlines.
+- The `<linearGradient>` id is namespaced with `useId()` — harmless with a
+  single instance on the page today, but a hardcoded id would have silently
+  collided if this panel is ever rendered twice in one document (e.g. a future
+  compare view).
 
-    before   progress panel top = 907px in a 760px viewport   (fully off-screen)
-    after    progress panel top = 148px, centre 268px          (35% down, visible)
+Not changed: the log-ish `sqrt(day)` x-scale, the data itself, and the table
+below the chart — the complaint was specifically about the chart's proportions
+and finish, not its content or the surrounding panel.
 
-The fix is that a solve in flight is reason enough to fold, not just a finished
-one. `foldedCargo` is now `!cargoOpen && (quote != null || (solving &&
-lastRequest != null))`, and the band's toggle stays available while solving so
-there is a way back. The `lastRequest` guard matters: on a cold start with
-nothing submitted there is still no summary to fold to, and folding would hide
-the form behind nothing.
+Verified: `tsc --noEmit` and `npm run build` clean; `npm run lint` shows the
+same pre-existing warnings as before this change (set-state-in-effect /
+only-export-components in unrelated files) and nothing new from this file. Not
+re-checked in a browser screenshot — no headless-browser driver (`chromium-cli`,
+Playwright) was available in this environment; verify visually at
+`/` → Evidence → Forecast before treating this as done.
 
-Folding during the first solve needs something to fold TO, and no QuoteResult
-exists yet, so `App` now passes `lastRequest` (which it already tracked for the
-deep link) down to the page and `CargoSummary` takes the fields common to a
-request and a result rather than a `QuoteResult`. During the first solve it
-describes the cargo being priced and says "pricing now" instead of a priced
-date. It deliberately shows no vessel class in that state: the optimizer has not
-chosen one yet, and printing the requested one would state an answer the desk
-does not have.
+## 2026-09-05 (later still) — Round 7c: fan chart, why not one point per day
 
-Verified: tsc, npm run build, npm run lint all clean (0 errors). The before/after
-measurement above was taken by reverting the two files to their committed state,
-measuring, and restoring from a backup taken first. Regression-checked after
-restoring: the full reported flow still passes (form 788px, reader scrolls to
-217px to reach Run quote, scrollTop returns to 8px, form folds, DECISION lands
-at y=90, and reopening the band returns all vessel fields and the volume as
-typed), and all seven screens mount with zero console errors.
+Follow-up ask on Round 7b: make the fan chart plot a value for every day
+instead of just 7d/30d/90d, "so the graph looks real and professional."
 
-One false alarm worth recording: a first pass of the all-screens check showed
-tonnage-field and fragility rendering Port Twin's content. That was the test's
-own 2.2s wait being too short for those lazily-loaded route chunks, not a
-regression -- both render correctly at a 6s wait.
+Investigated rather than implemented as asked, because the literal request
+runs straight into `CLAUDE.md`'s rule 1 ("NEVER fabricate a number... NOT to
+invent a plausible-looking value"). Traced the pipeline
+(`backend/main.py` → `src/opt/quote.py` → `src/ml/live_forecast.py` →
+`src/ml/inference.py`): `RateHorizon.horizon_days` and `ForecastFan
+.horizon_days` are typed `Literal[7, 30, 90]` in `src/opt/types.py`, and those
+three numbers are not samples of one continuous model -- they are three
+independently trained XGBoost boosters, one per horizon
+(`src/data/models/xgb_h7.ubj` / `xgb_h30.ubj` / `xgb_h90.ubj`, loaded by
+`FreightPredictor.__init__` in `src/ml/inference.py:20-23`), each fit to its
+own target column built by `src/ml/targets.py`'s `build_forward_targets()`
+("the first trading day on or after `t + h` calendar days" -- a per-horizon
+label, not a step in a daily series). `HORIZONS = (7, 30, 90)` is hardcoded
+identically in `live_forecast.py`, `baselines.py` and `export.py`. No daily
+rate series, fitted curve, or path simulation exists anywhere in `src/ml/` or
+`src/data/` that a day-15 or day-45 value could honestly come from -- the only
+way to produce one would be interpolating between the three real points and
+presenting the result as if it were 87 more independently-computed forecasts,
+which is exactly the fabrication rule 1 names.
+
+Put the tradeoff to the user directly (real per-day points vs. fabrication vs.
+a bigger retraining project) rather than picking silently. They chose the
+honest middle ground: keep the three real anchor values, make the curve
+between them look continuous.
+
+What changed, in `frontend/src/components/desk/rate-forecast-table.tsx`:
+
+- Added `monotoneTangents` / `monotoneSegments` / `monotonePath` /
+  `monotoneBandPath` -- a monotone cubic (Fritsch-Carlson) Hermite spline
+  implementation, the same curve family as d3's `curveMonotoneX`. Chosen over
+  a plain Catmull-Rom/natural cubic specifically because monotone Hermite
+  cannot overshoot past a neighbouring anchor -- a natural spline through only
+  3 points can bulge past the highest or lowest real value and visually imply
+  a peak that was never forecast.
+- The p50 line (`p50Points` → `monotonePath`) and the p10/p90 uncertainty band
+  (`monotoneBandPath`, a closed ribbon between two monotone curves sharing the
+  same x-positions) now render as smooth curves through the exact same three
+  real values instead of straight-line segments meeting at a sharp corner.
+- This is a rendering transform only: still exactly 3 data points in, still
+  `Literal[7, 30, 90]` on the wire, no new numbers anywhere -- confirmed no
+  change to `backend/`, `src/ml/`, or `src/opt/`.
+
+Verified: `tsc --noEmit` and `npm run build` clean; `npm run lint` shows no new
+findings in this file. Not re-checked in a browser screenshot (same
+no-headless-browser-driver constraint as Round 7b) -- verify visually at
+`/` → Evidence → Forecast.
+
+## 2026-09-05 (later still) — Round 7d: the two theme toggles didn't sync
+
+User report: flip the top-bar theme switch and the one inside the Settings
+drawer keeps showing the old theme (and vice versa) until it happens to
+remount.
+
+Cause: `components/shell/theme-toggle.tsx` and `components/shell/settings-
+drawer.tsx` each kept a *private* `useState<Theme>`, seeded once from
+`<html>`'s class at mount and never revisited. `setTheme()` in `lib/theme.ts`
+applied the class to `<html>` and wrote `localStorage` correctly, but nothing
+told the OTHER component's local copy that anything had changed — each
+toggle's on-screen state was a snapshot taken once at mount, not a live read.
+
+Fix, in `frontend/src/lib/theme.ts`:
+
+- Added a small `listeners: Set<() => void>` pub-sub, a `subscribe`/
+  `getSnapshot` pair, and `useTheme()` — a `useSyncExternalStore` hook where
+  `getSnapshot` reads the live truth directly off `<html>`'s class (rather
+  than a copy) and `setTheme` now calls every registered listener after it
+  applies the change.
+- `theme-toggle.tsx` and `settings-drawer.tsx` both now call `useTheme()`
+  instead of keeping their own `useState`; both are `useSyncExternalStore`
+  subscribers on the same store, so a change from either place re-renders
+  both immediately, without a remount.
+- Removed `resolveTheme()` and `watchSystemTheme()` from `lib/theme.ts`: both
+  were the seed/no-op-subscription pair the two private `useState`s used, and
+  neither has a caller left once both toggles read through `useTheme()`.
+  Their "dark wins over OS preference, and here's why" rationale was real
+  product policy, not dead commentary, so it was moved onto `getSnapshot`
+  (which now enforces that policy) rather than deleted with the function.
+  `index.html`'s pre-paint script comment, which pointed at `resolveTheme()`,
+  now points at `getSnapshot()`.
+
+Verified: `tsc --noEmit`, `npm run build`, `npm run lint` all clean, no new
+findings. Not re-checked in a browser screenshot (same no-headless-browser-
+driver constraint as the last two rounds) -- verify by opening the Settings
+drawer, flipping the top-bar switch, and confirming the drawer's switch
+updates without closing/reopening it, and vice versa.

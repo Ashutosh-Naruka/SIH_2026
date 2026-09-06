@@ -1,27 +1,20 @@
 import { Moon, Sun } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { resolveTheme, setTheme, watchSystemTheme, type Theme } from '@/lib/theme'
+import { useTheme, type Theme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 /**
  * Theme switch for the top bar.
  *
- * State is seeded from what is already on <html> (the pre-paint script in
- * index.html put it there), never from a default -- seeding to a constant and
- * correcting in an effect is what makes a toggle flicker on mount.
+ * Reads through `useTheme`, the same shared store the settings-drawer switch
+ * reads through -- see the note on `listeners` in lib/theme.ts for why a
+ * private `useState` here used to fall out of sync with that other switch.
  *
  * The icon shows the theme you will GET, not the one you are in, and the label
  * says so explicitly, because a lone sun/moon glyph is ambiguous in both
  * directions and people misread it about half the time.
  */
 export function ThemeToggle({ onDark }: { onDark?: boolean }) {
-  const [theme, setThemeState] = useState<Theme>(() =>
-    typeof document !== 'undefined' && document.documentElement.classList.contains('light')
-      ? 'light'
-      : resolveTheme(),
-  )
-
-  useEffect(() => watchSystemTheme(setThemeState), [])
+  const [theme, setTheme] = useTheme()
 
   const next: Theme = theme === 'dark' ? 'light' : 'dark'
   const Icon = next === 'dark' ? Moon : Sun
@@ -29,10 +22,7 @@ export function ThemeToggle({ onDark }: { onDark?: boolean }) {
   return (
     <button
       type="button"
-      onClick={() => {
-        setTheme(next)
-        setThemeState(next)
-      }}
+      onClick={() => setTheme(next)}
       title={`Switch to ${next} theme`}
       aria-label={`Switch to ${next} theme`}
       className={cn(

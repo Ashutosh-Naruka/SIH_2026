@@ -20,7 +20,7 @@
       (function () {
         try {
           // Dark unless the user explicitly picked light. The OS preference
-          // deliberately gets no vote here -- see resolveTheme() in
+          // deliberately gets no vote here -- see getSnapshot() in
           // lib/theme.ts for why.
           var stored = localStorage.getItem('desk-theme')
           if (stored === 'light') {

@@ -2,8 +2,8 @@
  * Theme control.
  *
  * Dark is the product's primary look and the default when nothing else is
- * known. A stored choice always wins; absent one, the OS preference decides;
- * absent that, dark.
+ * known. A stored choice always wins; absent one, dark — the OS preference is
+ * never consulted (see `getSnapshot` below for why).
  *
  * The class goes on <html> (not <body>) so the pre-paint script in index.html
  * can set it before React mounts -- a theme applied in an effect flashes the
@@ -15,9 +15,47 @@
  * palette is defined.
  */
 
+import { useSyncExternalStore } from 'react'
+
 export type Theme = 'dark' | 'light'
 
 const STORAGE_KEY = 'desk-theme'
+
+/**
+ * The toggle exists in two places (top bar, settings drawer). Both used to
+ * seed a private `useState` from `<html>` once at mount and never look again,
+ * so switching one left the other showing the stale theme until it happened
+ * to remount. `listeners` plus `useTheme` below make `<html>`'s class the one
+ * source of truth every mounted toggle re-reads from, via
+ * `useSyncExternalStore` -- setTheme's writer and each toggle's reader now go
+ * through the same object instead of each keeping its own copy.
+ */
+const listeners = new Set<() => void>()
+
+function subscribe(onStoreChange: () => void): () => void {
+  listeners.add(onStoreChange)
+  return () => listeners.delete(onStoreChange)
+}
+
+/**
+ * The theme actually applied to the document right now: dark unless the user
+ * has explicitly chosen light. The OS preference does NOT get a vote.
+ *
+ * This used to fall back to `systemTheme()`, and it meant anyone on a
+ * light-mode machine — the majority — opened the product and saw the light
+ * theme, having never been shown the one it was designed around. "Dark is the
+ * primary experience" and "defer to the OS" are contradictory instructions,
+ * and deferring silently won. A product with a deliberate look ships that look
+ * first and lets people opt out; the toggle is right there in the top bar.
+ */
+function getSnapshot(): Theme {
+  return document.documentElement.classList.contains('light') ? 'light' : 'dark'
+}
+
+/** Every mounted toggle's live view of the theme, plus the setter. */
+export function useTheme(): readonly [Theme, (t: Theme) => void] {
+  return [useSyncExternalStore(subscribe, getSnapshot, () => 'dark'), setTheme] as const
+}
 
 /** The stored choice, if the user has made one and storage is readable. */
 export function storedTheme(): Theme | null {
@@ -31,24 +69,9 @@ export function storedTheme(): Theme | null {
   }
 }
 
-/** What the OS asks for. Read only for reporting — see resolveTheme. */
+/** What the OS asks for. Read only for reporting — see `getSnapshot` for why it is never consulted to pick the applied theme. */
 export function systemTheme(): Theme {
   return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
-}
-
-/**
- * Dark unless the user has explicitly chosen light. The OS preference does
- * NOT get a vote.
- *
- * This used to fall back to `systemTheme()`, and it meant anyone on a
- * light-mode machine — the majority — opened the product and saw the light
- * theme, having never been shown the one it was designed around. "Dark is the
- * primary experience" and "defer to the OS" are contradictory instructions,
- * and deferring silently won. A product with a deliberate look ships that look
- * first and lets people opt out; the toggle is right there in the top bar.
- */
-export function resolveTheme(): Theme {
-  return storedTheme() ?? 'dark'
 }
 
 export function applyTheme(theme: Theme): void {
@@ -64,14 +87,6 @@ export function setTheme(theme: Theme): void {
     // Persisting is a convenience; failing to persist must not break the
     // toggle itself, which has already applied above.
   }
-}
-
-/**
- * Kept as a no-op subscription so callers keep a stable API, but the desk no
- * longer follows the OS at all: dark is the product's look, and a machine
- * flipping to day mode should not repaint a tool someone is mid-decision in.
- * The toggle is the only thing that changes the theme.
- */
-export function watchSystemTheme(_onChange: (t: Theme) => void): () => void {
-  return () => {}
+  // Tell every mounted toggle to re-read `<html>`'s class -- see `useTheme`.
+  listeners.forEach((l) => l())
 }
