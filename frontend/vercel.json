@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://sih2026-backend-s2c6.onrender.com" }
+    { "source": "/api/:path*", "destination": "https://sih2026-backend-s2c6.onrender.com/:path*" }
   ]
 }
