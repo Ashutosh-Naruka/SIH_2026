@@ -5082,3 +5082,28 @@ Verified: `render.yaml` parses as valid YAML (`yaml.safe_load`),
 live Render/Vercel deployments -- that requires the user's own accounts and
 is documented as the next step in `docs/16_deployment.md`, not something this
 session could complete.
+
+## 2026-09-07 — Deployment doc: torch was never the OOM cause
+
+The deployed Render backend hit its 512MB free-tier memory limit in
+production and auto-restarted, exactly the risk `render.yaml` and
+`docs/16_deployment.md` had flagged as possible -- but both blamed
+`torch`/`xgboost`/`polars` jointly, without having actually checked whether
+torch is loaded into the live process at all. Checked now: `grep` across
+`backend/main.py`, `src/opt/`, `src/ml/inference.py` and
+`src/ml/live_forecast.py` for any torch import found nothing; the only
+importer anywhere in `src/` is `src/ml/model_lstm.py`, an offline training
+script that nothing in `backend/main.py`'s import chain reaches. So torch
+costs `uv sync` install time on Render's build machine but zero runtime
+memory -- the actual pressure is `xgboost`'s three loaded models plus
+`polars` holding the real on-disk market history and ~130-port satellite
+port-call data in memory across everything `backend/main.py` imports at
+startup.
+
+Corrected both files to say so plainly rather than leave a plausible-sounding
+but unverified guess standing, and pointed the user at the actual fix
+(Render dashboard -> Settings -> Instance Type -> a paid plan with more
+RAM, since the free tier's 512MB is genuinely not enough for this backend's
+real working set). No code changed -- this is a documentation-accuracy fix
+only, triggered by the user reporting Render's "exceeded its memory limit"
+email and slow requests in the live deployment.
