@@ -154,7 +154,7 @@ def _compute() -> ReplaySnapshot:
 # competition, that person is a judge.
 #
 # The numbers do not change. They are simply computed once, at build time,
-# instead of once per process. That is faithful to CLAUDE.md's network policy
+# instead of once per process. That is faithful to the project's network policy
 # in spirit: a build-time artefact under ``src/data/``, consumed offline, with
 # the consumer degrading to "compute it now" rather than failing when it is
 # absent.

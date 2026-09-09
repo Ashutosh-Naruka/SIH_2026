@@ -27,7 +27,7 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from ml.live_forecast import latest_available_date
 from opt.network import PortEnum

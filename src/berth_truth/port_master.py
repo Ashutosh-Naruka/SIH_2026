@@ -3,10 +3,10 @@
 Two separate questions this module answers:
 
 1. **PS coverage audit** -- does the network cover every country the problem
-   statement names as an origin? ``docs/00_og_problem_statement.md`` opens
+   statement names as an origin? ``docs/problem-statement.md`` opens
    with "key origins like Australia, the US, Mozambique, Russia and
    Indonesia"; its own detailed description two paragraphs later drops
-   Russia, and ``docs/01_problem_statement.md:8`` already flags this as a
+   Russia, and ``docs/problem-statement.md`` already flags this as a
    likely accidental omission. Before this module, ``PortEnum`` had no
    Russian member at all -- confirmed by iterating it. ``VOSTOCHNY_RU`` was
    added to ``opt.network`` to close that gap (see its own docstring there
@@ -133,7 +133,7 @@ class PortProfile(BaseModel):
 
 
 #: Every country the PS names as an origin, verbatim from the opening
-#: sentence of docs/00_og_problem_statement.md:3 -- "varying supply and
+#: sentence of docs/problem-statement.md:3 -- "varying supply and
 #: demand dynamics from key origins like Australia, the US, Mozambique,
 #: Russia and Indonesia". Kept as the PS's own words, not a paraphrase, so
 #: the coverage check below is auditable against the source line.

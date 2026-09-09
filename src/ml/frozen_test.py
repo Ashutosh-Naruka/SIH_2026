@@ -8,7 +8,7 @@ anything else -- comparing a candidate model, tuning a hyperparameter, eyeballin
 "does this look right" -- that answer gets a little less honest, because the choice
 made in response to what was seen becomes implicitly fitted to the test data.
 
-The project's own rule, stated in docs/03_model_guide.md, is "touch test once, at
+The project's own rule, stated in docs/model-guide.md, is "touch test once, at
 the end, ever." Nothing enforced it. ``opt.calibration.calibrate_pso`` takes a
 ``test_split`` DataFrame and optimises hyperparameters against it with no signal
 that the caller has handed it the frozen set rather than ``valid``; the only

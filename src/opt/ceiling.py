@@ -1,6 +1,6 @@
 """Ceiling rate calculator and lock/wait decision engine.
 
-This is Sub-problem 1 of the optimizer (see docs/02_overview.md and the
+This is Sub-problem 1 of the optimizer (see docs/technical-reference.md and the
 optimizer_design artifact).
 
 The core question: given today's TC broker quote and a P10/P50/P90 forecast
@@ -14,7 +14,7 @@ Design choices
     purely from those forecast quantiles, the basis table, and the user's risk
     tolerance. Distance/fuel/port costs belong in the voyage estimator.
 
-*   Basis is applied optimizer-side: per 02_overview.md,
+*   Basis is applied optimizer-side: per the optimizer design notes,
         route_tce(r, c, t+h) = BASE(c, t+h) × (1 + basis_mean(r))
     and the fan is widened by basis_std.
 
@@ -79,7 +79,7 @@ def _apply_basis(
     Returns (route_p10, route_p50, route_p90) in USD/day.
 
     When basis is None, the BASE quantiles pass through unchanged.
-    Per 02_overview.md:
+    Per the optimizer design notes:
         route_P50 = BASE_P50 × (1 + basis_mean)
         route_fan_half_width = (BASE_P90 - BASE_P10) / 2 × sqrt(1 + (basis_std / basis_mean)^2)
     We use a simpler additive widening that is numerically more stable when

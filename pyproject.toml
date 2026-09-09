@@ -36,7 +36,7 @@ dependencies = [
     # scene's own geotransform, reading ONLY that window, never the whole
     # multi-GB scene). Deliberately not added until a real account existed to
     # actually exercise it against -- see that module's own docstring and
-    # docs/12_fix_changelog.md's 4.2 entry for why this was proposed and held
+    # the changelog's 4.2 entry for why this was proposed and held
     # back rather than added silently.
     "rasterio>=1.5.1",
     # Saves the real CFAR detection overlay PNG (anchorage's own visual

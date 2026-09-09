@@ -27,7 +27,7 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import polars as pl
 
@@ -42,7 +42,7 @@ from opt import (
 )
 from opt.network import PortEnum, RouteFamily
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[1]
 MASTER_PATH = default_master_path()
 
 # ---------------------------------------------------------------------------

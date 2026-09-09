@@ -14,7 +14,7 @@ not a buoy reading -- see ``data_builders.provenance``).
 
 Network policy, and why this module is the one exception
 ----------------------------------------------------------
-CLAUDE.md's network policy is: every external fetch is a build-time harvester
+The project's network policy is: every external fetch is a build-time harvester
 under ``src/data_builders/``, never a per-request call from ``backend/`` or
 ``opt/``. That rule fits a static archive (IBTrACS, PortWatch) that can be
 pulled once and reused indefinitely. It does not fit a genuinely *rolling*

@@ -32,7 +32,6 @@ dist/
 # IDE
 .vscode/
 .idea/
-.claude/
 *.code-workspace
 
 # Environments
@@ -94,7 +93,7 @@ raw_data/ibtracs/*.csv
 # from a real scene are also large (~8 MB each, full-resolution crops) and
 # regenerable from the scene, so they are ignored here too -- a small,
 # presentation-ready copy of the one worth keeping lives in
-# docs/screenshots/ instead, which IS committed.
+# assets/screenshots/ instead, which IS committed.
 raw_data/sentinel1/*.zip
 raw_data/sentinel1/*.SAFE
 raw_data/sentinel1/*.tiff
@@ -118,3 +117,12 @@ raw_data/sentinel1/*.png
 #
 # census.jsonl is likewise NOT ignored -- that IS the real observation, kept
 # the same way opt/ledger's log is.
+
+# Internal working notes: the design plan, the dated fix changelog, the
+# self-audit fault register, the phase-by-phase build plans and the
+# screen-by-screen internal walkthrough. These are the team's own working
+# records, kept on disk because the code's docstrings still cite them, but
+# they are not part of the submitted deliverable. docs/ ships the problem
+# statement, the technical reference, the architecture note, the model
+# guide, the glossary and the deployment runbook instead.
+docs/_internal/

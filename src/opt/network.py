@@ -232,7 +232,7 @@ class PortEnum(Enum):
         id="Vostochny_RU",
         # Closes the Russia gap the PS opening names ("Australia, the US,
         # Mozambique, Russia and Indonesia") but the detailed description and
-        # the pre-P1 network both dropped -- see docs/01_problem_statement.md:8
+        # the pre-P1 network both dropped -- see docs/problem-statement.md
         # and P1's port-network audit. Figures are PPK-3's modern Capesize
         # coal berths at Vostochny (Nakhodka Bay), sourced from two
         # independent operator/agency pages (NHK Maritime Services' own

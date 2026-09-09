@@ -60,7 +60,7 @@ Committee amends it on no fixed schedule; a route returning no listed area
 after that date means "no area on record as of the last review", never "the
 Joint War Committee has confirmed this route is clear."
 
-Not fetched at runtime: the circular is not scraped, by design (CLAUDE.md's
+Not fetched at runtime: the circular is not scraped, by design (the project's
 network policy, and the DO NOT on this module's own brief). Updating this
 table is a deliberate human act with a new ``last_reviewed`` date.
 """

@@ -65,7 +65,7 @@ class CIIYearNotPublishedError(Exception):
     business-as-usual factors this module does not implement, and 2027-2030
     were left "to be further strengthened" as of that guideline. Guessing an
     extrapolated value for either range would be exactly the fabricated
-    number CLAUDE.md's non-negotiable #1 forbids -- callers must catch this
+    number this project's non-negotiable #1 forbids -- callers must catch this
     and degrade to "no rating," not invent one.
     """
 

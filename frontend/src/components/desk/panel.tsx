@@ -56,7 +56,7 @@ export function Panel({
     <section
       id={id}
       className={cn(
-        // No h-full here on purpose (see the F-54 note in docs/12_fix_changelog.md):
+        // No h-full here on purpose (see the F-54 note in the project changelog):
         // it used to live in this base class, so every Panel greedily filled
         // 100% of its containing block's height. That's correct ONLY when a
         // caller wraps Panel in an explicitly sized box (VoyageDeskPage's own

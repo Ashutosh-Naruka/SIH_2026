@@ -6,11 +6,11 @@ below was read off the running system, the real data files on disk, or the sourc
 itself on 2026-08-29. Where a number could not be verified, it has been left out
 rather than approximated.
 
-**Companion documents.** `docs/00_og_problem_statement.md` (the PS as issued),
-`docs/10_HOW_IT_ACTUALLY_WORKS.md` (a screen-by-screen plain-language walkthrough,
-written against an earlier state — several faults it describes are now fixed),
-`docs/11_FAULT_REGISTER.md` (the self-audit), `docs/12_fix_changelog.md` (what was
-fixed, why, and how it was verified).
+**Companion documents.** [`docs/problem-statement.md`](problem-statement.md) (the PS as
+issued), [`docs/architecture.md`](architecture.md) (the system diagram and layer
+responsibilities), [`docs/model-guide.md`](model-guide.md) (how to add and fairly compare
+a forecasting model), [`docs/glossary.md`](glossary.md) (the chartering vocabulary),
+[`docs/deployment.md`](deployment.md) (how the live deployment is wired).
 
 ---
 
@@ -364,13 +364,13 @@ sooner — and the adjustment is provably one-directional, so it can never talk 
 of locking.
 
 **6. It carries a published, dated audit of its own faults.**
-There is a fault register listing every defect found in a hostile self-audit —
-severity, evidence, and status — and a changelog recording what was fixed, why, and
-how the fix was verified against the original evidence. Thirty-plus faults closed,
-each with a re-run check; the handful still open are marked deferred with the
-reasoning written next to them. Judges can be handed the list of things that are
-wrong with this system. Very few teams can do that, and it is a stronger credibility
-signal than any accuracy number.
+The team keeps a fault register listing every defect found in a hostile self-audit —
+severity, evidence, and status — alongside a changelog recording what was fixed, why,
+and how the fix was verified against the original evidence. Thirty-plus faults closed,
+each with a re-run check; the handful still open are marked deferred with the reasoning
+written next to them, and Section 7 below is the summary of what is still true. Judges
+can be handed the list of things that are wrong with this system. Very few teams can do
+that, and it is a stronger credibility signal than any accuracy number.
 
 **7. Two pieces of genuinely new transfer work.**
 An optimal-execution framework from equity trading (Almgren–Chriss) has been
@@ -558,7 +558,10 @@ src/emissions/       IMO carbon intensity
 src/impact/          demand elasticity + optimal execution (not yet wired)
 backend/main.py      every HTTP route
 frontend/src/        the trading-desk UI
-docs/                problem statement, walkthrough, fault register, changelog
+docs/                problem statement, architecture, technical reference
+scripts/             one-shot demo, scenario and backtest runners
+assets/screenshots/  captures from the running system
+submission/          presentation and demo-video links
 ```
 
 ### 9.3 The API surface (21 endpoints)
@@ -625,8 +628,9 @@ length, beam and deadweight at both ports, and rejected classes show the binding
 reason. Where a port has a real berth register, that is used; where it does not, the
 system says CANNOT_VERIFY and lowers its own confidence rather than guessing.
 
-**"What's wrong with it?"** Section 7, and the fault register — a dated list of every
-defect found in a hostile self-audit, with severity, evidence, and status.
+**"What's wrong with it?"** Section 7 — and behind it, the team's own fault register: a
+dated list of every defect found in a hostile self-audit, with severity, evidence and
+status, available on request.
 
 ### 9.7 Demo notes
 

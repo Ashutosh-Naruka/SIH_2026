@@ -3,13 +3,13 @@
 # this file automatically once the repo is connected.
 #
 # Deliberately NOT using a native "uv" runtime (Render has none): the build
-# command installs uv itself, then uses it exactly the way CLAUDE.md's own
-# `Commands` section runs the backend locally (`uv run uvicorn ...`), so the
+# command installs uv itself, then uses it exactly the way the project's
+# own README runs the backend locally (`uv run uvicorn ...`), so the
 # deployed process resolves the same dependency set as `uv.lock` pins rather
 # than a separately-resolved requirements.txt.
 #
 # What this does NOT do: fetch any external data at request time. Per
-# CLAUDE.md's "Network policy for new data sources", every real data source
+# the project's "build-time harvester only" network policy, every real data source
 # is a build-time harvester that already wrote into raw_data/ and
 # src/data/ -- both are committed to the repo, so the deployed instance reads
 # the same on-disk parquet/csv/model files this repo ships, with no live
