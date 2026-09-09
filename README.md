@@ -237,7 +237,9 @@ SIH_2026/
 ├── README.md
 ├── LICENSE
 ├── submission/
-│   ├── PRESENTATION.md          # 6-page PPT (file or viewer link)
+│   ├── CodeHackerz_SIH2026_Presentation.pptx   # the final 6-page deck
+│   ├── CodeHackerz_SIH2026_PDF.pdf             # same deck, PDF
+│   ├── PRESENTATION.md          # page-by-page summary
 │   └── DEMO.md                  # demo video with voiceover
 ├── docs/
 │   ├── architecture.md          # components and data flow
@@ -294,10 +296,13 @@ SIH_2026/
 
 ## 8. Final Presentation
 
-The final 6-page SIH presentation is kept in the [`submission/`](submission/) folder.
+The final 6-page SIH presentation is in the [`submission/`](submission/) folder, in both formats:
 
-See [submission/PRESENTATION.md](submission/PRESENTATION.md) for the file and, where the PPT is
-too large for GitHub, the accessible viewer link.
+- **PowerPoint:** [CodeHackerz_SIH2026_Presentation.pptx](submission/CodeHackerz_SIH2026_Presentation.pptx)
+- **PDF:** [CodeHackerz_SIH2026_PDF.pdf](submission/CodeHackerz_SIH2026_PDF.pdf)
+
+The PDF opens directly in a browser, so it can be read from GitHub with no download.
+See [submission/PRESENTATION.md](submission/PRESENTATION.md) for a page-by-page summary.
 
 ---
 

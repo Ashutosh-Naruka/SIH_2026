@@ -5,29 +5,28 @@
 The final 6-page SIH 2026 presentation for **Chartering Desk**, our intelligent freight
 forecasting and vessel chartering optimizer.
 
-## Presentation file
+## Presentation files
 
-Replace the placeholder below with the actual file name once the PPT is uploaded to this folder:
+Both formats hold the same six slides at 13.333 x 7.5 in (16:9 widescreen).
 
-- **PPT:** `[Open Final Presentation](./CodeHackerz_SIH2026_Presentation.pptx)`
+| Format | File |
+|---|---|
+| PowerPoint | [CodeHackerz_SIH2026_Presentation.pptx](./CodeHackerz_SIH2026_Presentation.pptx) |
+| PDF | [CodeHackerz_SIH2026_PDF.pdf](./CodeHackerz_SIH2026_PDF.pdf) |
 
-## External presentation link (only if the file is too large for GitHub)
-
-`<PASTE_GOOGLE_DRIVE_OR_ONEDRIVE_VIEW_LINK_HERE>`
-
-> Set sharing to **Anyone with the link, Viewer** and test the link in a logged-out or
-> incognito window before submitting.
+The PDF opens in any browser with no software needed, so reviewers can read the deck straight
+from GitHub. The PPTX is the editable original.
 
 ## What the 6 pages cover
 
 | Page | Content |
 |---|---|
-| 1 | Problem statement SIH26006: the reactive spot-chartering status quo and what it costs |
-| 2 | Proposed solution: the LOCK/WAIT decision desk, end to end |
-| 3 | Technical approach: the market, decision, physical, risk and accountability layers |
-| 4 | What we do differently: option pricing on the wait branch, the Tonnage Field, provenance-enforced honesty |
-| 5 | Results: forecast performance against baselines, the decision-value backtest, the live deployment |
-| 6 | Feasibility, impact and future scope |
+| 1 | Title page: PS ID, PS title, theme, category and team |
+| 2 | Our idea: the proposed solution and its system architecture, end to end |
+| 3 | Technical approach: the harvest, learn, decide, constrain and serve pipeline |
+| 4 | Feasibility and viability: measured evidence, risks, and how each is handled |
+| 5 | Impact and benefits: economic, operational, environmental and governance, with a worked example |
+| 6 | Research and references: every data source and method, named and dated |
 
 ## Related links
 
