@@ -231,12 +231,25 @@ def parse_page(page: str) -> dict[date, dict[str, float]]:
 
         record: dict[str, float] = {}
         for code, column in _INDEX_COLUMNS.items():
-            # "to reach 3,157 points" and "to 5,221 points" both appear.
-            match = re.search(rf"\({code}\)[^.]*?\bto (?:reach )?([\d,]+) points", body)
+            # "to reach 3,157 points" and "to 5,221 points" both appear. So does
+            # "remained unchanged at 2,414 points" on a day the index does not
+            # move -- a real market event, not a publication gap, and one the
+            # earlier "... to N points" pattern silently dropped: 2026-09-09
+            # left BPI_INDEX blank, which removed Panamax from the forecast
+            # entirely and 503'd every Panamax-sized quote for that date.
+            match = re.search(
+                rf"\({code}\)[^.]*?\b(?:to (?:reach )?|unchanged at )([\d,]+) points", body
+            )
             if match:
                 record[column] = _to_float(match.group(1))
         for name, column in _RATE_COLUMNS.items():
-            match = re.search(rf"for {name} bulk carriers[^.]*?\bto \$([\d,]+)", body)
+            # The same variant is accepted for the $/day figure. It has not been
+            # observed there yet -- on 2026-09-09 the index was flat while the
+            # rate still moved a dollar -- but the two halves of the sentence
+            # are written independently, so the wording is available to both.
+            match = re.search(
+                rf"for {name} bulk carriers[^.]*?\b(?:to|unchanged at) \$([\d,]+)", body
+            )
             if match:
                 record[column] = _to_float(match.group(1))
 

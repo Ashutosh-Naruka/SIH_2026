@@ -70,12 +70,75 @@ class TestParsing:
         ):
             assert day[column] > 0
 
-    def test_a_missing_figure_is_absent_rather_than_guessed(self, parsed: dict) -> None:
-        """28 August genuinely has no BHSI figure on the page. The record comes
-        back without that key -- it is never filled from the previous day, which
-        would put a number the source did not publish under the source's name."""
-        assert "bhsi" not in parsed[date(2026, 8, 28)]
+    def test_a_flat_index_in_the_real_fixture_is_recovered(self, parsed: dict) -> None:
+        """28 August was long believed to have no BHSI figure. It does: the page
+        says "remained unchanged at 881 points", and the earlier pattern dropped
+        it. 881 is the same level 27 August published, which is what "unchanged"
+        means, so the recovered figure is the source's own and not a carry-over
+        this parser invented."""
+        assert parsed[date(2026, 8, 28)]["bhsi"] == 881.0
+        assert parsed[date(2026, 8, 27)]["bhsi"] == 881.0
         assert parsed[date(2026, 8, 28)]["supramax_tc_avg_usd_day"] == 20819.0
+
+    def test_a_missing_figure_is_absent_rather_than_guessed(self) -> None:
+        """A class the page does not mention at all must come back absent. It is
+        never filled from the previous day, which would put a number the source
+        did not publish under the source's name."""
+        page = (
+            "<p>2-September-2026</p><p>"
+            "The Baltic Dry Index (BDI) increased by 10 points to reach 3,167 points. "
+            "The Baltic Capesize Index (BCI) increased by 20 points to 5,241 points, "
+            "with average daily earnings for capesize bulk carriers increased by $100 "
+            "to $47,450."
+            "</p>"
+        )
+        day = hh.parse_page(page)[date(2026, 9, 2)]
+        assert day["bci"] == 5241.0
+        for absent in ("bsi", "bhsi", "bpi", "supramax_tc_avg_usd_day",
+                       "handysize_tc_avg_usd_day", "panamax_tc_avg_usd_day"):
+            assert absent not in day
+
+    def test_an_index_that_did_not_move_is_still_read(self) -> None:
+        """On a flat day the page writes "remained unchanged at N points"
+        instead of "... to N points". That is a real market event, not a
+        publication gap.
+
+        The wording below is the site's own, copied from 2026-09-09. The
+        earlier pattern required "to N points", so BPI came back blank for
+        that date; because the forecast needs a class's index to build its
+        feature row, Panamax dropped out of the forecast entirely and every
+        Panamax-sized quote as of that date returned a 503. The $/day half of
+        the same sentence parsed fine, which is why only one class broke.
+        """
+        page = (
+            "<p>9-September-2026</p><p>"
+            "The Baltic Dry Index (BDI) increased by 36 points to reach 3,620 points. "
+            "The Baltic Panamax Index (BPI) remained unchanged at 2,414 points, while "
+            "average daily income for panamax bulk carriers increased by $1 to $21,725."
+            "</p>"
+        )
+        day = hh.parse_page(page)[date(2026, 9, 9)]
+        assert day["bpi"] == 2414.0
+        assert day["panamax_tc_avg_usd_day"] == 21725.0
+        assert day["bdi"] == 3620.0
+
+    def test_a_rate_that_did_not_move_is_still_read(self) -> None:
+        """The two halves of the sentence are written independently, so the
+        flat-day wording is available to the $/day figure as well. Not yet
+        observed on the page -- on 2026-09-09 the index was flat while the
+        rate still moved a dollar -- so this guards the half that has not
+        broken yet rather than documenting a fix.
+        """
+        page = (
+            "<p>9-September-2026</p><p>"
+            "The Baltic Dry Index (BDI) increased by 36 points to reach 3,620 points. "
+            "The Baltic Supramax Index (BSI) increased by 11 points to 1,704 points, "
+            "with average daily earnings for supramax bulk carriers unchanged at $21,537."
+            "</p>"
+        )
+        day = hh.parse_page(page)[date(2026, 9, 9)]
+        assert day["bsi"] == 1704.0
+        assert day["supramax_tc_avg_usd_day"] == 21537.0
 
     def test_a_page_with_no_entries_parses_to_nothing(self) -> None:
         assert hh.parse_page("<html><body><p>Nothing here</p></body></html>") == {}
