@@ -25,12 +25,12 @@
 
 | Name | Role |
 |---|---|
-| Ashutosh Naruka | _add role_ |
-| Anirudh S Nair | _add role_ |
-| Aryan Bharadwaj | _add role_ |
-| Bhumit | _add role_ |
-| Ark Malhotra | _add role_ |
-| Muskan Agrahari | _add role_ |
+| Ashutosh Naruka | Frontend Engineering |
+| Anirudh S Nair | Backend Architecture |
+| Aryan Bharadwaj | Backend Engineering |
+| Bhumit | Backend Systems |
+| Ark Malhotra | ML Lead |
+| Muskan Agrahari | Frontend Design |
 
 ---
 
@@ -308,8 +308,11 @@ See [submission/PRESENTATION.md](submission/PRESENTATION.md) for a page-by-page 
 
 ## 9. Demo Video
 
-A demo video of the project **with voiceover** is linked in
-[submission/DEMO.md](submission/DEMO.md).
+A walkthrough of the running system, with voiceover:
+
+**https://youtu.be/LZJ_k0DY9cI**
+
+See [submission/DEMO.md](submission/DEMO.md) for what each part of the video covers.
 
 ---
 

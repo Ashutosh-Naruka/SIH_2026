@@ -4,12 +4,9 @@
 
 A walkthrough of **Chartering Desk** with voiceover, recorded against the running system.
 
-## Demo video link
+## Watch the demo
 
-`<PASTE_YOUTUBE_OR_GOOGLE_DRIVE_VIDEO_LINK_HERE>`
-
-> Set sharing to **Anyone with the link, Viewer** (or make the YouTube video Public or Unlisted)
-> and test it in a logged-out or incognito window before submitting.
+**https://youtu.be/LZJ_k0DY9cI**
 
 ## What the video covers
 

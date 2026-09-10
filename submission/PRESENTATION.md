@@ -15,7 +15,13 @@ Both formats hold the same six slides at 13.333 x 7.5 in (16:9 widescreen).
 | PDF | [CodeHackerz_SIH2026_PDF.pdf](./CodeHackerz_SIH2026_PDF.pdf) |
 
 The PDF opens in any browser with no software needed, so reviewers can read the deck straight
-from GitHub. The PPTX is the editable original.
+from GitHub. The PPTX is fully editable: every heading, bullet, table cell and diagram label is a
+real text box, every panel and connector is a real shape, and the logos are real pictures. There
+is not a single flattened screenshot in it.
+
+The deck is set in Montserrat and Open Sans (SIL Open Font License), embedded in both files.
+The PDF is the reference rendering; PowerPoint will substitute a system face for any weight it
+cannot resolve locally, which changes the type but not the layout.
 
 ## What the 6 pages cover
 

@@ -13,39 +13,39 @@ install time but not runtime memory.
 ## Why the frontend proxies through Vercel instead of calling Render directly
 
 The backend's session cookie is set `samesite="lax"` (`backend/main.py`,
-`response.set_cookie`) — deliberately, so a cross-site form post or embedded
+`response.set_cookie`) deliberately, so that a cross-site form post or embedded
 image can't ride an authenticated session. That is correct for same-origin
 use but means the cookie is silently dropped by the browser on any
 **cross-site** `fetch`, which is exactly what a Vercel frontend calling a
 `*.onrender.com` backend directly would be. Rather than loosening that cookie
 policy for every deployment, `frontend/vercel.json` makes Vercel itself proxy
-`/api/*` to the Render backend server-side — the browser only ever talks to
+`/api/*` to the Render backend server-side, so the browser only ever talks to
 the Vercel origin, so the request is same-origin from its point of view, the
 existing `samesite="lax"` cookie keeps working unmodified, and the backend's
 `DESK_CORS_ORIGINS` (see `backend/main.py`) never needs to be set for this
 path at all. This is the same shape `frontend/src/lib/api.ts`'s own F-39
 comment already anticipated ("something in front of the static files...
-proxies `/api` itself") — no frontend or backend code changed to support it.
+proxies `/api` itself"), and no frontend or backend code changed to support it.
 
 ## One-time setup
 
 1. **Backend on Render.** Dashboard → New → Blueprint → connect this repo →
    Render reads `render.yaml` at the repo root. Confirm the service name is
    `sih2026-backend` (or note whatever name Render actually assigns if that
-   one is taken — service subdomains are global across all Render accounts).
+   one is taken, because service subdomains are global across all Render accounts).
    First build installs `uv`, runs `uv sync --frozen`, and the health check
    hits `/docs` (the app has no route at `/`, so that would look like a
    permanent failure to Render's default health check).
 
    The free plan (`render.yaml`'s default) has 512MB RAM and spins down after
    15 minutes idle. **Confirmed in production on 2026-09-07**: Render's own
-   "exceeded its memory limit" alert fired and auto-restarted the instance —
+   "exceeded its memory limit" alert fired and auto-restarted the instance,
    a request landing right after reads as the app hanging or failing, when
    what actually happened is the process got killed and is restarting. The
    cause is `xgboost`'s three loaded models plus `polars` holding the on-disk
    market/port-call data in memory across everything `backend/main.py`
-   imports at startup — not `torch` (see above). Fix: Render dashboard →
-   the service → Settings → Instance Type → `starter` or above. This is a
+   imports at startup, not `torch` (see above). Fix: Render dashboard >
+   the service > Settings > Instance Type > `starter` or above. This is a
    billing change only the account owner can make, so it isn't set in
    `render.yaml` by default; slimming the dependency set is not the right
    fix here, the data this backend holds in memory to answer a quote
@@ -59,14 +59,14 @@ proxies `/api` itself") — no frontend or backend code changed to support it.
 
 3. **Frontend on Vercel.** Dashboard → Add New → Project → import this repo →
    set **Root Directory** to `frontend` → framework preset Vite (build
-   command `npm run build`, output directory `dist` — Vercel detects both
+   command `npm run build`, output directory `dist`, and Vercel detects both
    automatically once the root directory is set). Vercel picks up
    `frontend/vercel.json`'s rewrite on that same import; no environment
    variables are required for the proxy to work.
 
 ## Updating either service later
 
-Both are connected directly to this GitHub branch — a normal `git push` to
+Both are connected directly to this GitHub branch, so a normal `git push` to
 it triggers a new build and deploy on each platform independently. There is
 no separate deploy step to remember.
 
@@ -77,11 +77,11 @@ no separate deploy step to remember.
   from the browser; the Vercel-proxy approach above makes it unnecessary, and
   setting it would re-introduce the cross-site cookie problem this setup
   avoids.
-- **No `DESK_CORS_ORIGINS` set on Render.** Same reason — the browser never
+- **No `DESK_CORS_ORIGINS` set on Render.** Same reason: the browser never
   makes a cross-origin request to Render under this setup, so there is
   nothing for CORS to allow.
 - **No change to `raw_data/`'s harvester-only network policy.** Both
   `raw_data/` and `src/data/` (including the three `xgb_h{7,30,90}.ubj`
-  models) are already committed to the repo and ship with the deploy as-is —
-  the backend does not fetch or rebuild any of it at request time, on Render
+  models) are already committed to the repo and ship with the deploy as-is.
+  The backend does not fetch or rebuild any of it at request time, on Render
   or anywhere else.

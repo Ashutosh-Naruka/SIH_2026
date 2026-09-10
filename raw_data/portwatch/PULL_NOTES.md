@@ -1,4 +1,4 @@
-# PortWatch Daily Port Calls — Pull Notes
+# PortWatch Daily Port Calls: Pull Notes
 
 **Pull date:** 2026-08-22
 **Source:** IMF PortWatch (ArcGIS Online hosted feature services)
@@ -70,7 +70,7 @@ then three blocks per vessel type (`container`, `dry_bulk`, `general_cargo`, `ro
 | Samarinda_ID | port1137 | Indonesia | 2783 | full range* |
 
 \* Global service range is **2019-01-01 → 2026-08-14**; every port returned exactly 2,783 daily
-rows. Individual ports may have leading/trailing zero-activity days rather than missing days —
+rows. Individual ports may have leading/trailing zero-activity days rather than missing days, since
 the service emits one row per port-day. Verify per-port first activity if you care about
 true coverage start.
 
@@ -78,7 +78,7 @@ true coverage start.
 
 | Requested | Status |
 |---|---|
-| **Gangavaram (India)** | NOT in PortWatch ports database. Searched `UPPER(portname)/fullname LIKE '%GANGA%'` (0 hits globally) and an Andhra-coast bounding box (lat 16.5–19.5, lon 83–85.5): only Visakhapatnam and Gopalpur exist there. Gangavaram's traffic may be folded into Visakhapatnam by PortWatch's port segmentation. |
+| **Gangavaram (India)** | NOT in PortWatch ports database. Searched `UPPER(portname)/fullname LIKE '%GANGA%'` (0 hits globally) and an Andhra-coast bounding box (lat 16.5 to 19.5, lon 83 to 85.5): only Visakhapatnam and Gopalpur exist there. Gangavaram's traffic may be folded into Visakhapatnam by PortWatch's port segmentation. |
 | **Sandheads** | Not a separate entry; Sandheads is the pilot station seaward of the Kolkata/Haldia complex. Covered by `port207` (Kolkata / Syama Prasad Mookerjee Port) and `port442` (Haldia). |
 | **Dalrymple Bay (AU)** | No separate entry found; adjacent to Hay Point (`port458`), which typically covers both terminals in AIS-based datasets. |
 
@@ -93,7 +93,7 @@ true coverage start.
 
 ## Files
 
-- `<PORTNAME>_daily_portcalls.csv` — one per port, header:
+- `<PORTNAME>_daily_portcalls.csv`: one per port, header:
   `date,portid,portname,country,ISO3,portcalls_container,...,export` (26 cols)
-- `ports_index.csv` — portid lookup incl. resolution notes
-- `pull_summary.csv` — machine-readable per-port pull stats
+- `ports_index.csv`: portid lookup incl. resolution notes
+- `pull_summary.csv`: machine-readable per-port pull stats

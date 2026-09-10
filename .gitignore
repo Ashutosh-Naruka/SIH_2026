@@ -126,3 +126,8 @@ raw_data/sentinel1/*.png
 # statement, the technical reference, the architecture note, the model
 # guide, the glossary and the deployment runbook instead.
 docs/_internal/
+
+# Font files used to typeset the deck. Kept locally so the presentation can be
+# re-rendered, but not part of the submitted repository: the PDF already has
+# them embedded and the PPTX carries its own embedded copies.
+submission/fonts/
